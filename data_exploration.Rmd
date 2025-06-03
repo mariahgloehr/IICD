@@ -21,6 +21,7 @@ full_cell_cycle %>%
   geom_bar(aes(x = phase))
 ```
 
+
 ## AGE DISTRIBUTIONS
 
 ```{r}
@@ -32,4 +33,7 @@ cell_cycle %>%
   ggplot() +
   geom_density(aes(x = age))
 ```
-
+```{r}
+library("car")
+qqPlot(cell_cycle$age)
+```

@@ -20,15 +20,18 @@ full_cell_cycle <- read.csv("control_manifold_allfeatures.csv")
 ```
 
 
-## initial feature selection
+## initial feature selection + add in G0
 ```{r}
 excluded_vars <- c("PCNA.foci", "Nuc.area", "Cyto.area", "Cell.area", "DNA.content", 
                    "PHATE_1", "PHATE_2", "Unnamed..0.1.1", "annotated.age", "annotated.phase")
+
 cell_cycle <- full_cell_cycle %>%
-  select(-all_of(excluded_vars))
+  select(-all_of(excluded_vars)) %>%
+  mutate(ratio = pRB..nuc.median./RB..nuc.median.) %>%
+  mutate(phase = ifelse(ratio < 1.6, "G0", phase))
 ```
 
- 
+
 ## Missingness Analysis
 ```{r}
 cell_cycle %>%
@@ -84,13 +87,20 @@ cell_cycle_imputed <- missForest(cell_cycle2)$ximp
 
 # columns are not standardized
 ```{r}
-mean(cell_cycle_imputed$cycA..nuc.median.)
-sd(cell_cycle_imputed$cycA..nuc.median.)
+mean(cell_cycle_imputed$age)
+sd(cell_cycle_imputed$age)
 ```
 
 ```{r}
+age_unscale <- cell_cycle_imputed$age
 cell_cycle_standardized <- cell_cycle_imputed %>%
-  mutate(across(where(is.numeric), ~ as.numeric(scale(.))))
+  mutate(across(where(is.numeric), ~ as.numeric(scale(.)))) %>%
+  mutate(age = age_unscale)
+```
+
+```{r}
+mean(cell_cycle_standardized$age)
+sd(cell_cycle_standardized$age)
 ```
 
 
