@@ -5,5 +5,31 @@ library(tidyverse)
 
 ```{r}
 cell_cycle <- read.csv("cell_cycle_tidied.csv")
+full_cell_cycle <- read.csv("control_manifold_allfeatures.csv")
+```
+
+
+## phase distributions
+
+```{r}
+cell_cycle %>%
+  ggplot() +
+  geom_bar(aes(x = phase))
+
+full_cell_cycle %>%
+  ggplot() +
+  geom_bar(aes(x = phase))
+```
+
+## AGE DISTRIBUTIONS
+
+```{r}
+cell_cycle %>%
+  ggplot() +
+  geom_boxplot(aes(y = age))
+
+cell_cycle %>%
+  ggplot() +
+  geom_density(aes(x = age))
 ```
 
