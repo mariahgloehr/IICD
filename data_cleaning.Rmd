@@ -1,0 +1,92 @@
+
+```{r}
+install.packages("hardhat")
+install.packages("ModelMetrics")
+```
+
+```{r}
+install.packages("caret", dependencies = c("Depends", "Suggests"))
+```
+
+```{r}
+library(caret)
+library(tidyverse)
+```
+
+```{r}
+full_cell_cycle <- read.csv("control_manifold_allfeatures.csv")
+```
+
+
+## initial feature selection
+```{r}
+excluded_vars <- c("PCNA.foci", "Nuc.area", "Cyto.area", "Cell.area", "DNA.content", 
+                   "PHATE_1", "PHATE_2", "Unnamed..0.1.1", "annotated.age", "annotated.phase")
+cell_cycle <- full_cell_cycle %>%
+  select(-all_of(excluded_vars))
+```
+
+ 
+## Missingness Analysis
+```{r}
+cell_cycle %>%
+  summarise(across(everything(), ~sum(is.na(.)))) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "NA_count") %>%
+  filter(NA_count > 0) %>%
+  mutate(color = if_else(NA_count > 0.1*8850, "red", NA)) %>%
+  ggplot() +
+  geom_bar(aes(x = variable, y = NA_count, fill = color), stat = "identity")
+```
+```{r}
+missingness_vars <- cell_cycle %>%
+  summarise(across(everything(), ~sum(is.na(.)))) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "NA_count") %>%
+  filter(NA_count > 0.1*885) %>%
+  pull(variable)
+```
+
+## mean imputation
+
+```{r}
+cell_cycle2 <- cell_cycle %>%
+  select(-all_of(missingness_vars))
+```
+
+```{r}
+cell_cycle_imputed <- cell_cycle2
+for(i in 1:ncol(cell_cycle_imputed)) {
+  if (is.numeric(cell_cycle_imputed[[i]])) {
+  cell_cycle_imputed[[i]][is.na(cell_cycle_imputed[[i]])] <- mean(cell_cycle_imputed[[i]], na.rm = TRUE)
+  }
+}  
+```
+
+## check
+```{r}
+cell_cycle_imputed %>%
+  summarise(across(everything(), ~sum(is.na(.)))) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "NA_count") %>%
+  filter(NA_count > 0)
+```
+
+## Standardization
+
+# columns are not standardized
+```{r}
+mean(cell_cycle_imputed$cycA..nuc.median.)
+sd(cell_cycle_imputed$cycA..nuc.median.)
+```
+
+```{r}
+cell_cycle_standardized <- cell_cycle_imputed %>%
+  mutate(across(where(is.numeric), ~ as.numeric(scale(.))))
+```
+
+
+## export clean data
+```{r}
+write.csv(cell_cycle_standardized, "cell_cycle_tidied.csv", row.names = FALSE)
+```
+
+
+
