@@ -1,0 +1,9 @@
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+cell_cycle <- read.csv("cell_cycle_tidied.csv")
+```
+
