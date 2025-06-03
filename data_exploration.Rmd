@@ -15,10 +15,6 @@ full_cell_cycle <- read.csv("control_manifold_allfeatures.csv")
 cell_cycle %>%
   ggplot() +
   geom_bar(aes(x = phase))
-
-full_cell_cycle %>%
-  ggplot() +
-  geom_bar(aes(x = phase))
 ```
 
 
