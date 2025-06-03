@@ -6,11 +6,13 @@ install.packages("ModelMetrics")
 
 ```{r}
 install.packages("caret", dependencies = c("Depends", "Suggests"))
+install.packages("missForest")
 ```
 
 ```{r}
 library(caret)
 library(tidyverse)
+library(missForest)
 ```
 
 ```{r}
@@ -37,6 +39,7 @@ cell_cycle %>%
   ggplot() +
   geom_bar(aes(x = variable, y = NA_count, fill = color), stat = "identity")
 ```
+
 ```{r}
 missingness_vars <- cell_cycle %>%
   summarise(across(everything(), ~sum(is.na(.)))) %>%
@@ -45,28 +48,36 @@ missingness_vars <- cell_cycle %>%
   pull(variable)
 ```
 
-## mean imputation
-
 ```{r}
 cell_cycle2 <- cell_cycle %>%
   select(-all_of(missingness_vars))
 ```
 
+## missForest imputation
+
 ```{r}
-cell_cycle_imputed <- cell_cycle2
-for(i in 1:ncol(cell_cycle_imputed)) {
-  if (is.numeric(cell_cycle_imputed[[i]])) {
-  cell_cycle_imputed[[i]][is.na(cell_cycle_imputed[[i]])] <- mean(cell_cycle_imputed[[i]], na.rm = TRUE)
-  }
-}  
+cell_cycle2$phase <- as.factor(cell_cycle2$phase)
+
+cell_cycle_imputed <- missForest(cell_cycle2)$ximp
+```
+
+## mean imputation
+
+```{r}
+#cell_cycle_imputed <- cell_cycle2
+#for(i in 1:ncol(cell_cycle_imputed)) {
+  #if (is.numeric(cell_cycle_imputed[[i]])) {
+  #cell_cycle_imputed[[i]][is.na(cell_cycle_imputed[[i]])] <- mean(cell_cycle_imputed[[i]], na.rm = TRUE)
+ # }
+#}  
 ```
 
 ## check
 ```{r}
-cell_cycle_imputed %>%
-  summarise(across(everything(), ~sum(is.na(.)))) %>%
-  pivot_longer(cols = everything(), names_to = "variable", values_to = "NA_count") %>%
-  filter(NA_count > 0)
+#cell_cycle_imputed %>%
+  #summarise(across(everything(), ~sum(is.na(.)))) %>%
+  #pivot_longer(cols = everything(), names_to = "variable", values_to = "NA_count") %>%
+  #filter(NA_count > 0)
 ```
 
 ## Standardization
