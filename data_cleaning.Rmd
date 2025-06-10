@@ -122,10 +122,14 @@ top_40_list <- top_40[[1]]
 
 ```{r}
 converted <- sub("^Int_Med_([^_]+)_([^_]+)$", "\\1..\\2.median", top_40_list)
-print(converted)
+converted2 <- converted <- ifelse(grepl("^AreaShape_Area_", converted),
+                    paste0(str_to_title(sub("^AreaShape_Area_", "", converted)), ".area"),
+                    converted)
+print(converted2)
 ```
 
 ```{r}
-cell_cycle_standardized$Area
+cell_cycle_standardized$Fra1..cell.median.
+top_features$Fra1
 ```
 
