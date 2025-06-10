@@ -92,9 +92,13 @@ sd(cell_cycle_imputed$age)
 
 ```{r}
 age_unscale <- cell_cycle_imputed$age
+PHATE1_unscale <- cell_cycle_imputed$PHATE_1
+PHATE2_unscale <- cell_cycle_imputed$PHATE_2
 cell_cycle_standardized <- cell_cycle_imputed %>%
   mutate(across(where(is.numeric), ~ as.numeric(scale(.)))) %>%
-  mutate(age = age_unscale)
+  mutate(age = age_unscale,
+         PHATE_1 = PHATE1_unscale,
+         PHATE_2 = PHATE2_unscale)
 ```
 
 ```{r}
