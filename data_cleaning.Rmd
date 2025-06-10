@@ -114,22 +114,25 @@ write.csv(cell_cycle_standardized, "cell_cycle_tidied.csv", row.names = FALSE)
 
 ```{r}
 top_features <- read_csv("~/IICD/IICD/mmc3.csv")
-top_40 <- slice(top_features, 4:44)
+top_40 <- slice(top_features, 4:43)
 top_40_list <- top_40[[1]]
-#cell_cycle_top40 <- cell_cycle_standardized %>%
-#  select(all_of(top_40_list))
 ```
 
 ```{r}
-converted <- sub("^Int_Med_([^_]+)_([^_]+)$", "\\1..\\2.median", top_40_list)
-converted2 <- converted <- ifelse(grepl("^AreaShape_Area_", converted),
+converted <- sub("^Int_(?:Med|MeanEdge)_([^_]+)_([^_]+)$", "\\1..\\2.median.", x = top_40_list)
+  #sub("^Int_Med_([^_]+)_([^_]+)$", "\\1..\\2.median", top_40_list)
+converted2 <- ifelse(grepl("^AreaShape_Area_", converted),
                     paste0(str_to_title(sub("^AreaShape_Area_", "", converted)), ".area"),
                     converted)
-print(converted2)
+converted3 <- 
 ```
 
 ```{r}
-cell_cycle_standardized$Fra1..cell.median.
-top_features$Fra1
+cell_cycle_top40 <- cell_cycle_standardized %>%
+  select(all_of(setdiff(converted2, c("cycB1..ring.median.", "Bcl2..nuc.median."))))
+```
+
+```{r}
+write.csv(cell_cycle_top40, "top40_cell_cycle.csv", row.names = FALSE)
 ```
 
