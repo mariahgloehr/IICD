@@ -17,7 +17,7 @@ y = df['age']  # target is now age
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=949)
 
 # Train Random Forest Regressor with 500 trees and max depth 15
-rf = RandomForestRegressor(n_estimators=500, max_depth=15, max_features='sqrt', random_state=949)
+rf = RandomForestRegressor(n_estimators=500, max_depth=8, max_features='sqrt', random_state=949)
 rf.fit(X_train, y_train)
 
 # Predict on training and test sets
