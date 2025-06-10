@@ -10,7 +10,7 @@ df = pd.read_csv("cell_cycle_tidied.csv")
 df['phase'] = df['phase'].replace({'M': 'G2'})
 
 # Separate features and target
-X = df.drop(columns=['phase', 'age'])
+X = df.drop(columns=['phase', 'age', 'PHATE_1', 'PHATE_2'])
 y = df['phase']
 
 # Split data into train and test sets (80:20)
