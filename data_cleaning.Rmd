@@ -22,7 +22,7 @@ full_cell_cycle <- read.csv("control_manifold_allfeatures.csv")
 
 ## initial feature selection + add in G0
 ```{r}
-excluded_vars <- c("PCNA.foci", "Nuc.area", "Cyto.area", "Cell.area", "DNA.content", "Unnamed..0.1.1", "annotated.age", "annotated.phase")
+excluded_vars <- c("PCNA.foci", "DNA.content", "Unnamed..0.1.1", "annotated.age", "annotated.phase")
 
 cell_cycle <- full_cell_cycle %>%
   select(-all_of(excluded_vars)) %>%
@@ -119,9 +119,13 @@ top_40_list <- top_40[[1]]
 #cell_cycle_top40 <- cell_cycle_standardized %>%
 #  select(all_of(top_40_list))
 ```
+
 ```{r}
 converted <- sub("^Int_Med_([^_]+)_([^_]+)$", "\\1..\\2.median", top_40_list)
 print(converted)
 ```
 
+```{r}
+cell_cycle_standardized$Area
+```
 
