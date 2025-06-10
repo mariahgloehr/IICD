@@ -124,7 +124,6 @@ converted <- sub("^Int_(?:Med|MeanEdge)_([^_]+)_([^_]+)$", "\\1..\\2.median.", x
 converted2 <- ifelse(grepl("^AreaShape_Area_", converted),
                     paste0(str_to_title(sub("^AreaShape_Area_", "", converted)), ".area"),
                     converted)
-converted3 <- 
 ```
 
 ```{r}
@@ -134,5 +133,9 @@ cell_cycle_top40 <- cell_cycle_standardized %>%
 
 ```{r}
 write.csv(cell_cycle_top40, "top40_cell_cycle.csv", row.names = FALSE)
+```
+
+```{r}
+cell_cycle_top40$phase
 ```
 
