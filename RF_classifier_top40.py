@@ -11,7 +11,7 @@ df = pd.read_csv("top40_cell_cycle.csv")
 df['phase'] = df['phase'].replace({'M': 'G2'})
 
 # Separate features and target
-X = df.drop(columns=['phase', 'age', 'PHATE_1', 'PHATE_2'])
+X = df.drop(columns=['phase', 'age'])
 y = df['phase']
 
 # Split data into train and test sets (80:20)
