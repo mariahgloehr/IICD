@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 
 cell_cycle = pd.read_csv('cell_cycle_tidied.csv') 
-features = cell_cycle.drop(['phase', 'age'], axis=1)
+features = cell_cycle.drop(['phase', 'age', 'PHATE_1', 'PHATE_2'], axis=1)
 labels = cell_cycle['phase']
 
-tsne = TSNE(n_components=2, random_state=949, perplexity=30, max_iter=1000)
+tsne = TSNE(n_components=2, random_state=949, perplexity=100, max_iter=1000)
 tsne_results = tsne.fit_transform(features)
 
 phase_to_color = {'G0': 0, 'G1': 1, 'S': 2, 'G2': 3, 'M': 4}
@@ -28,7 +28,7 @@ plt.tight_layout()
 #plt.show()
 
 # Save the plot
-plot_path = "tsne_cell_cycle_plot.png"
+plot_path = "tsne_100.png"
 plt.savefig(plot_path, dpi=300)
 plt.show()
 
