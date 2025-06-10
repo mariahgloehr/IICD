@@ -8,4 +8,7 @@ cell_cycle = pd.read_csv('cell_cycle_tidied.csv')
 features = cell_cycle.drop(['phase', 'age'], axis=1)
 labels = cell_cycle['phase']
 
-print(labels)
+if 'column_name' in cell_cycle.columns:
+    print("Column exists!")
+else:
+    print("Column does not exist.")
