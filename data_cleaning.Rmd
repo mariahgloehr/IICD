@@ -23,11 +23,13 @@ full_cell_cycle <- read.csv("control_manifold_allfeatures.csv")
 ## initial feature selection + add in G0
 ```{r}
 excluded_vars <- c("PCNA.foci", "DNA.content", "Unnamed..0.1.1", "annotated.age", "annotated.phase")
+#these are non-protein expression features, so not interested in these for our models
 
 cell_cycle <- full_cell_cycle %>%
   select(-all_of(excluded_vars)) %>%
   mutate(ratio = pRB..nuc.median./RB..nuc.median.) %>%
   mutate(phase = ifelse(ratio < 1.6, "G0", phase))
+## annotating G0 based on biological threshold, ratio < 1.6
 ```
 
 
@@ -46,8 +48,9 @@ cell_cycle %>%
 missingness_vars <- cell_cycle %>%
   summarise(across(everything(), ~sum(is.na(.)))) %>%
   pivot_longer(cols = everything(), names_to = "variable", values_to = "NA_count") %>%
-  filter(NA_count > 0.1*885) %>%
+  filter(NA_count > 0.1*8850) %>%
   pull(variable)
+#removing features with greater than 10% missingness
 ```
 
 ```{r}
@@ -61,6 +64,7 @@ cell_cycle2 <- cell_cycle %>%
 cell_cycle2$phase <- as.factor(cell_cycle2$phase)
 
 cell_cycle_imputed <- missForest(cell_cycle2)$ximp
+#missForest imputation
 ```
 
 ## mean imputation
@@ -99,6 +103,7 @@ cell_cycle_standardized <- cell_cycle_imputed %>%
   mutate(age = age_unscale,
          PHATE_1 = PHATE1_unscale,
          PHATE_2 = PHATE2_unscale)
+#standardizing all numeric entries (only feature entires, so excluding age and PHATE embeddings)
 ```
 
 ```{r}
@@ -124,18 +129,20 @@ converted <- sub("^Int_(?:Med|MeanEdge)_([^_]+)_([^_]+)$", "\\1..\\2.median.", x
 converted2 <- ifelse(grepl("^AreaShape_Area_", converted),
                     paste0(str_to_title(sub("^AreaShape_Area_", "", converted)), ".area"),
                     converted)
+
+converted3 <- c(converted2, "age", "phase")
+
+#stringr work to ensure that the top 40 variable names match the full dataset
 ```
 
 ```{r}
 cell_cycle_top40 <- cell_cycle_standardized %>%
-  select(all_of(setdiff(converted2, c("cycB1..ring.median.", "Bcl2..nuc.median."))))
+  select(all_of(setdiff(converted3, c("cycB1..ring.median.", "Bcl2..nuc.median."))))
 ```
 
 ```{r}
 write.csv(cell_cycle_top40, "top40_cell_cycle.csv", row.names = FALSE)
 ```
 
-```{r}
-cell_cycle_top40$phase
-```
+
 
