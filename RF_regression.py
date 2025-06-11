@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 
 # Load data
@@ -28,12 +28,18 @@ y_test_pred = rf.predict(X_test)
 rmse_train = np.sqrt(mean_squared_error(y_train, y_train_pred))
 rmse_test = np.sqrt(mean_squared_error(y_test, y_test_pred))
 
+
+# Calculate R^2
+r2_train = r2_score(y_train, y_train_pred)
+r2_test = r2_score(y_test, y_test_pred)
+
 print("=== Training Set ===")
 print(f"RMSE: {rmse_train:.4f}")
+print(f"R^2: {r2_train:.4f}")
 
 print("\n=== Test Set ===")
 print(f"RMSE: {rmse_test:.4f}")
-
+print(f"R^2: {r2_test:.4f}")
 
 # For training set
 df_train = pd.DataFrame({
@@ -62,3 +68,5 @@ rmse_per_phase_test = df_test.groupby('phase').apply(
 
 print("\nRMSE per phase (Test):")
 print(rmse_per_phase_test)
+
+mean_squared_error, r2_score

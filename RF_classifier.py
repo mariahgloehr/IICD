@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, ConfusionMatrixDisplay, cohen_kappa_score
 from sklearn.model_selection import GridSearchCV
 
 # Load data
@@ -50,25 +50,33 @@ y_test_pred = rf.predict(X_test)
 
 ## cross-validation:
 
-param_grid = {
-    'n_estimators': [500, 600, 700],              # default is 100
-    'max_depth': [8, 10, 20],    # None = no limit
-    'max_features': ['sqrt', 'log2'],   # default is 'sqrt'
-    'min_samples_split': [2, 5],        # default is 2
-}
+#param_grid = {
+#    'n_estimators': [500, 600, 700],              # default is 100
+#    'max_depth': [8, 10, 20],    # None = no limit
+#    'max_features': ['sqrt', 'log2'],   # default is 'sqrt'
+#    'min_samples_split': [2, 5],        # default is 2
+#}
 
 # Set up GridSearch with 10-fold cross-validation optimizing for accuracy
-grid_search = GridSearchCV(
-    estimator=rf,
-    param_grid=param_grid,
-    cv=10,
-    scoring='accuracy',
-    n_jobs=-1
-)
+#grid_search = GridSearchCV(
+#    estimator=rf,
+#    param_grid=param_grid,
+#    cv=10,
+#    scoring='accuracy',
+#    n_jobs=-1
+#)
 
 # Fit the model to your data
-grid_search.fit(X, y)
+#grid_search.fit(X, y)
 
 # Output best settings and best accuracy
-print("Best parameters:", grid_search.best_params_)
-print("Best cross-validation accuracy:", grid_search.best_score_)
+#print("Best parameters:", grid_search.best_params_)
+#print("Best cross-validation accuracy:", grid_search.best_score_)
+
+# kappa
+
+kappa_train = cohen_kappa_score(y_train, y_train_pred)
+kappa_test = cohen_kappa_score(y_test, y_test_pred)
+
+print(f"Cohen's Kappa (Train): {kappa_train:.3f}")
+print(f"Cohen's Kappa (Test): {kappa_test:.3f}")
