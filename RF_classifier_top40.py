@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, cohen_kappa_score
 from sklearn.model_selection import GridSearchCV
 
 # Load data
@@ -47,3 +47,9 @@ accuracy_per_phase_test = df_test.groupby('true').apply(lambda x: accuracy_score
 
 print("\nAccuracy per phase (Test):")
 print(accuracy_per_phase_test)
+
+kappa_train = cohen_kappa_score(y_train, y_train_pred)
+kappa_test = cohen_kappa_score(y_test, y_test_pred)
+
+print(f"Cohen's Kappa (Train): {kappa_train:.3f}")
+print(f"Cohen's Kappa (Test): {kappa_test:.3f}")
