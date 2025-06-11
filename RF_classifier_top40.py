@@ -18,7 +18,7 @@ y = df['phase']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=949, stratify=y)
 
 # Train Random Forest model with 500 trees and large depth
-rf = RandomForestClassifier(n_estimators=500, max_depth=8, max_features='sqrt', random_state=949)
+rf = RandomForestClassifier(n_estimators=500, max_depth=50, max_features='sqrt', random_state=949)
 rf.fit(X_train, y_train)
 
 # Predict on training and test sets
