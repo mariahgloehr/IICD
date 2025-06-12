@@ -1,28 +1,32 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import RidgeCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score, root_mean_squared_error
 import numpy as np
 
 # Load data
-df = pd.read_csv("cell_cycle_tidied.csv")
+df = pd.read_csv("Data/cell_cycle_tidied.csv")
 
-#df['phase'] = df['phase'].replace({'M': 'G2'})
+# Prepare features and target
+X = df.drop(columns=['phase', 'age', 'PHATE_1', 'PHATE_2'])  # exclude non-protein features
+y = df['age']
 
-# Separate features and target
-X = df.drop(columns=['phase', 'age', 'PHATE_1', 'PHATE_2'])  # exclude phase and age
-y = df['age']  # target is now age
-
-# Split data into train and test sets (80:20)
+# Split into training and testing set (optional, for evaluation)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=949)
 
-# Train Random Forest Regressor with 500 trees and max depth 15
-rf = RandomForestRegressor(n_estimators=500, max_depth=50, max_features='sqrt', random_state=949)
-rf.fit(X_train, y_train)
+# Define alpha values to search (lambda equivalents)
+#alphas = np.logspace(-4, 4, 50)
+
+# Ridge Regression with 10-fold cross-validation
+ridge_cv = RidgeCV(alphas=(500.0, 600.0, 700.0), cv=10, scoring='neg_root_mean_squared_error')
+ridge_cv.fit(X_train, y_train)
+
+# Best alpha
+print(f"Best alpha (lambda): {ridge_cv.alpha_:.5f}")
 
 # Predict on training and test sets
-y_train_pred = rf.predict(X_train)
-y_test_pred = rf.predict(X_test)
+y_train_pred = ridge_cv.predict(X_train)
+y_test_pred = ridge_cv.predict(X_test)
 
 # Calculate RMSE
 rmse_train = root_mean_squared_error(y_train, y_train_pred)
