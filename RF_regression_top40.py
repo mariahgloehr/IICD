@@ -25,8 +25,8 @@ y_train_pred = rf.predict(X_train)
 y_test_pred = rf.predict(X_test)
 
 # Calculate RMSE
-rmse_train = np.sqrt(mean_squared_error(y_train, y_train_pred))
-rmse_test = np.sqrt(mean_squared_error(y_test, y_test_pred))
+rmse_train = root_mean_squared_error(y_train, y_train_pred)
+rmse_test = root_mean_squared_error(y_test, y_test_pred)
 
 # Calculate R^2
 r2_train = r2_score(y_train, y_train_pred)

@@ -26,57 +26,57 @@ y_train_pred = rf.predict(X_train)
 y_test_pred = rf.predict(X_test)
 
 # Output results
-print("=== Training Set ===")
-print("Overall Accuracy:", accuracy_score(y_train, y_train_pred))
+#print("=== Training Set ===")
+#print("Overall Accuracy:", accuracy_score(y_train, y_train_pred))
 #print("Per-Class Accuracy:\n", classification_report(y_train, y_train_pred, digits=3))
 
-print("\n=== Test Set ===")
-print("Overall Accuracy:", accuracy_score(y_test, y_test_pred))
+#print("\n=== Test Set ===")
+#print("Overall Accuracy:", accuracy_score(y_test, y_test_pred))
 #print("Per-Class Accuracy:\n", classification_report(y_test, y_test_pred, digits=3))
 
 # For training set
-df_train = pd.DataFrame({'true': y_train, 'pred': y_train_pred})
-accuracy_per_phase_train = df_train.groupby('true').apply(lambda x: accuracy_score(x['true'], x['pred']))
+#df_train = pd.DataFrame({'true': y_train, 'pred': y_train_pred})
+#accuracy_per_phase_train = df_train.groupby('true').apply(lambda x: accuracy_score(x['true'], x['pred']))
 
-print("Accuracy per phase (Train):")
-print(accuracy_per_phase_train)
+#print("Accuracy per phase (Train):")
+#print(accuracy_per_phase_train)
 
 # For test set
-df_test = pd.DataFrame({'true': y_test, 'pred': y_test_pred})
-accuracy_per_phase_test = df_test.groupby('true').apply(lambda x: accuracy_score(x['true'], x['pred']))
+#df_test = pd.DataFrame({'true': y_test, 'pred': y_test_pred})
+#accuracy_per_phase_test = df_test.groupby('true').apply(lambda x: accuracy_score(x['true'], x['pred']))
 
-print("\nAccuracy per phase (Test):")
-print(accuracy_per_phase_test)
+#print("\nAccuracy per phase (Test):")
+#print(accuracy_per_phase_test)
 
 ## cross-validation:
 
-#param_grid = {
-#    'n_estimators': [500, 600, 700],              
-#    'max_depth': [8, 10, 20],    
-#    'max_features': ['sqrt', 'log2'],   
-#    'min_samples_split': [2, 5],        
-#}
+param_grid = {
+    'n_estimators': [500, 600],              
+    'max_depth': [50, 60]    
+    #'max_features': ['sqrt', 'log2']   
+    #'min_samples_split': [2, 5],        
+}
 
 # Set up GridSearch with 10-fold cross-validation optimizing for accuracy
-#grid_search = GridSearchCV(
-#    estimator=rf,
-#    param_grid=param_grid,
-#    cv=10,
-#    scoring='accuracy',
-#    n_jobs=-1
-#)
+grid_search = GridSearchCV(
+    estimator=rf,
+    param_grid=param_grid,
+    cv=10,
+    scoring='accuracy',
+    n_jobs=-1
+)
 
 # Fit the model to your data
-#grid_search.fit(X, y)
+grid_search.fit(X, y)
 
-# Output best settings and best accuracy
-#print("Best parameters:", grid_search.best_params_)
-#print("Best cross-validation accuracy:", grid_search.best_score_)
+#Output best settings and best accuracy
+print("Best parameters:", grid_search.best_params_)
+print("Best cross-validation accuracy:", grid_search.best_score_)
 
 # kappa
 
-kappa_train = cohen_kappa_score(y_train, y_train_pred)
-kappa_test = cohen_kappa_score(y_test, y_test_pred)
+#kappa_train = cohen_kappa_score(y_train, y_train_pred)
+#kappa_test = cohen_kappa_score(y_test, y_test_pred)
 
-print(f"Cohen's Kappa (Train): {kappa_train:.3f}")
-print(f"Cohen's Kappa (Test): {kappa_test:.3f}")
+#print(f"Cohen's Kappa (Train): {kappa_train:.3f}")
+#print(f"Cohen's Kappa (Test): {kappa_test:.3f}")
