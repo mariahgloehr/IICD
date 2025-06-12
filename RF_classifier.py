@@ -50,28 +50,28 @@ y_test_pred = rf.predict(X_test)
 
 ## cross-validation:
 
-param_grid = {
-    'n_estimators': [500, 600],              
-    'max_depth': [50, 60]    
-    #'max_features': ['sqrt', 'log2']   
-    #'min_samples_split': [2, 5],        
-}
+#param_grid = {
+#    'n_estimators': [500, 600],              
+#    'max_depth': [50, 60]    
+#    #'max_features': ['sqrt', 'log2']   
+#    #'min_samples_split': [2, 5],        
+#}
 
 # Set up GridSearch with 10-fold cross-validation optimizing for accuracy
-grid_search = GridSearchCV(
-    estimator=rf,
-    param_grid=param_grid,
-    cv=10,
-    scoring='accuracy',
-    n_jobs=-1
-)
+#grid_search = GridSearchCV(
+#    estimator=rf,
+#    param_grid=param_grid,
+#    cv=10,
+#    scoring='accuracy',
+#    n_jobs=-1
+#)
 
 # Fit the model to your data
-grid_search.fit(X, y)
+#grid_search.fit(X, y)
 
 #Output best settings and best accuracy
-print("Best parameters:", grid_search.best_params_)
-print("Best cross-validation accuracy:", grid_search.best_score_)
+#print("Best parameters:", grid_search.best_params_)
+#print("Best cross-validation accuracy:", grid_search.best_score_)
 
 # kappa
 
@@ -80,3 +80,10 @@ print("Best cross-validation accuracy:", grid_search.best_score_)
 
 #print(f"Cohen's Kappa (Train): {kappa_train:.3f}")
 #print(f"Cohen's Kappa (Test): {kappa_test:.3f}")
+
+## CONFUSION MATRIX
+print("Train Confusion Matrix")
+print(confusion_matrix(y_train, y_train_pred, labels = ["G0", "G1", "G2", "S"]))
+
+print("Test Confusion Matrix")
+print(confusion_matrix(y_test, y_test_pred, labels = ["G0", "G1", "G2", "S"]))
