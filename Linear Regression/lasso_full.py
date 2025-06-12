@@ -1,32 +1,29 @@
 import pandas as pd
-from sklearn.linear_model import RidgeCV
+import numpy as np
+from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score, root_mean_squared_error
-import numpy as np
 
 # Load data
-df = pd.read_csv("Data/top40_cell_cycle.csv")
+df = pd.read_csv("Data/cell_cycle_tidied.csv")
 
-# Prepare features and target
-X = df.drop(columns=['phase', 'age'])  # exclude non-protein features
+# Separate features and target
+X = df.drop(columns=['phase', 'age', 'PHATE_1', 'PHATE_2'])  # drop non-feature columns
 y = df['age']
 
-# Split into training and testing set (optional, for evaluation)
+# Train-test split (optional, if you want separate test evaluation)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=949)
 
-# Define alpha values to search (lambda equivalents)
-#alphas = np.logspace(-4, 4, 50)
-
-# Ridge Regression with 10-fold cross-validation
-ridge_cv = RidgeCV(alphas=(1, 10.0, 50.0), cv=10, scoring='neg_root_mean_squared_error')
-ridge_cv.fit(X_train, y_train)
+# Fit Lasso regression with 10-fold CV to select best alpha
+lasso_cv = LassoCV(alphas = (0.001, 0.01, 0.1), cv=10, random_state=949, max_iter = 10000)
+lasso_cv.fit(X_train, y_train)
 
 # Best alpha
-print(f"Best alpha (lambda): {ridge_cv.alpha_:.5f}")
+print(f"Best alpha (lambda): {lasso_cv.alpha_:.5f}")
 
 # Predict on training and test sets
-y_train_pred = ridge_cv.predict(X_train)
-y_test_pred = ridge_cv.predict(X_test)
+y_train_pred = lasso_cv.predict(X_train)
+y_test_pred = lasso_cv.predict(X_test)
 
 # Calculate RMSE
 rmse_train = root_mean_squared_error(y_train, y_train_pred)
@@ -54,8 +51,7 @@ df_train = pd.DataFrame({
 
 rmse_per_phase_train = df_train.groupby('phase').apply(
     lambda x: root_mean_squared_error(x['true_age'], x['pred_age'])
-    )
-
+)
 
 print("RMSE per phase (Train):")
 print(rmse_per_phase_train)
@@ -69,8 +65,7 @@ df_test = pd.DataFrame({
 
 rmse_per_phase_test = df_test.groupby('phase').apply(
     lambda x: root_mean_squared_error(x['true_age'], x['pred_age'])
-    )
-
+)
 
 print("\nRMSE per phase (Test):")
 print(rmse_per_phase_test)
