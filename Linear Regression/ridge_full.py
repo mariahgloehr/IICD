@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.linear_model import RidgeCV
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score, root_mean_squared_error
+from sklearn.metrics import r2_score, root_mean_squared_error
 import numpy as np
 
 # Load data
@@ -53,7 +53,7 @@ df_train = pd.DataFrame({
 })
 
 rmse_per_phase_train = df_train.groupby('phase').apply(
-    lambda x: np.sqrt(mean_squared_error(x['true_age'], x['pred_age']))
+    lambda x: root_mean_squared_error(x['true_age'], x['pred_age'])
 )
 
 print("RMSE per phase (Train):")
@@ -67,7 +67,7 @@ df_test = pd.DataFrame({
 })
 
 rmse_per_phase_test = df_test.groupby('phase').apply(
-    lambda x: np.sqrt(mean_squared_error(x['true_age'], x['pred_age']))
+    lambda x: root_mean_squared_error(x['true_age'], x['pred_age'])
 )
 
 print("\nRMSE per phase (Test):")
