@@ -19,10 +19,13 @@ X_train, X_test, y_train, y_test = train_test_split(
 # Initialize XGBoost Regressor
 xgb_model = XGBRegressor(
     n_estimators=500,
-    learning_rate=0.05,
-    max_depth=6,
-    subsample=0.8,
-    colsample_bytree=0.8,
+    eta = 0.3,
+    gamma = 0,
+    max_depth=50,
+    min_child_weight = 1,
+    subsample=0.5,
+    colsample_bytree=1,
+    tree_method = "hist",
     random_state=949,
     objective='reg:squarederror'
 )
