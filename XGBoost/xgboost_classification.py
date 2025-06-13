@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 from xgboost import XGBClassifier
 
 # Load data
-df = pd.read_csv("cell_cycle_tidied.csv")
+df = pd.read_csv("Data/cell_cycle_tidied.csv")
 
 # Combine phase M and G2 into one class
 df['phase'] = df['phase'].replace({'M': 'G2'})
@@ -21,14 +21,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 xgb_model = XGBClassifier(
     n_estimators=500,
     eta = 0.3,
-    gamma = 0,
     max_depth=50,
-    min_child_weight = 1,
-    subsample=0.5,
-    colsample_bytree=1,
     tree_method = "hist",
-    random_state=949,
-    objective='reg:squarederror'
+    random_state=949
 )
 
 # Fit model
