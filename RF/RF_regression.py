@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score, root_mean_squared_error
@@ -72,23 +74,49 @@ rmse_test = root_mean_squared_error(y_test, y_test_pred)
 
 ## hypertuning
 
-param_grid = {
-    'n_estimators': [500, 600, 700],              
-    'max_depth': [50, 60, 70]          
-}
+#param_grid = {
+#    'n_estimators': [400, 500],              
+#    'max_depth': [40, 50]          
+#}
 
 # Set up GridSearch with 10-fold cross-validation optimizing for accuracy
-grid_search = GridSearchCV(
-    estimator=rf,
-    param_grid=param_grid,
-    cv=10,
-    scoring='accuracy',
-    n_jobs=-1
-)
+#grid_search = GridSearchCV(
+#    estimator=rf,
+#    param_grid=param_grid,
+#    cv=10,
+#    scoring= 'neg_root_mean_squared_error',
+#    n_jobs=-1
+#)
 
 # Fit the model to your data
-grid_search.fit(X, y)
+#grid_search.fit(X, y)
 
 #Output best settings and best accuracy
-print("Best parameters:", grid_search.best_params_)
-print("Best cross-validation accuracy:", grid_search.best_score_)
+#print("Best parameters:", grid_search.best_params_)
+#print("Best cross-validation accuracy:", grid_search.best_score_)
+
+# Create DataFrame for plotting
+df_plot = pd.DataFrame({
+    'True Age': y_test,
+    'Predicted Age': y_test_pred,
+    'Residual': y_test - y_test_pred,
+    'Phase': df.loc[y_test.index, 'phase']
+})
+
+# Plot residuals
+plt.figure(figsize=(10, 6))
+sns.scatterplot(
+    data=df_plot,
+    x='Predicted Age',
+    y='Residual',
+    hue='Phase',
+    palette='tab10',
+    alpha=0.7
+)
+plt.axhline(0, color='gray', linestyle='--')
+plt.title("Residuals of Random Forest Age Prediction by Phase")
+plt.xlabel("Predicted Age")
+plt.ylabel("Residual (True - Predicted)")
+plt.legend(title='Phase')
+plt.tight_layout()
+plt.show()
