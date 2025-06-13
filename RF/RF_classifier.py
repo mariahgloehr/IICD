@@ -48,10 +48,10 @@ print(accuracy_per_phase_test)
 
 ## hypertuning
 
-#param_grid = {
-#    'n_estimators': [500, 600, 700],              
-#    'max_depth': [50, 60, 70]          
-#}
+param_grid = {
+    'n_estimators': [500, 600, 700],              
+    'max_depth': [50, 60, 70]          
+}
 
 # Set up GridSearch with 10-fold cross-validation optimizing for accuracy
 #grid_search = GridSearchCV(
@@ -71,15 +71,15 @@ print(accuracy_per_phase_test)
 
 # kappa
 
-kappa_train = cohen_kappa_score(y_train, y_train_pred)
-kappa_test = cohen_kappa_score(y_test, y_test_pred)
+#kappa_train = cohen_kappa_score(y_train, y_train_pred)
+#kappa_test = cohen_kappa_score(y_test, y_test_pred)
 
-print(f"Cohen's Kappa (Train): {kappa_train:.3f}")
-print(f"Cohen's Kappa (Test): {kappa_test:.3f}")
+#print(f"Cohen's Kappa (Train): {kappa_train:.3f}")
+#print(f"Cohen's Kappa (Test): {kappa_test:.3f}")
 
 ## CONFUSION MATRIX
-print("Train Confusion Matrix")
-print(confusion_matrix(y_train, y_train_pred, labels = ["G0", "G1", "G2", "S"]))
+#print("Train Confusion Matrix")
+#print(confusion_matrix(y_train, y_train_pred, labels = ["G0", "G1", "G2", "S"]))
 
-print("Test Confusion Matrix")
-print(confusion_matrix(y_test, y_test_pred, labels = ["G0", "G1", "G2", "S"]))
+#print("Test Confusion Matrix")
+#print(confusion_matrix(y_test, y_test_pred, labels = ["G0", "G1", "G2", "S"]))

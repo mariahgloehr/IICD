@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, classification_report, cohen_kappa_s
 from sklearn.model_selection import GridSearchCV
 
 # Load data
-df = pd.read_csv("top40_cell_cycle.csv")
+df = pd.read_csv("Data/top40_cell_cycle.csv")
 
 # Combine phase M and G2 into one class
 df['phase'] = df['phase'].replace({'M': 'G2'})
@@ -55,8 +55,31 @@ y_test_pred = rf.predict(X_test)
 #print(f"Cohen's Kappa (Test): {kappa_test:.3f}")
 
 ## CONFUSION MATRIX
-print("Train Confusion Matrix")
-print(confusion_matrix(y_train, y_train_pred, labels = ["G0", "G1", "G2", "S"]))
+#print("Train Confusion Matrix")
+#print(confusion_matrix(y_train, y_train_pred, labels = ["G0", "G1", "G2", "S"]))
 
-print("Test Confusion Matrix")
-print(confusion_matrix(y_test, y_test_pred, labels = ["G0", "G1", "G2", "S"]))
+#print("Test Confusion Matrix")
+#print(confusion_matrix(y_test, y_test_pred, labels = ["G0", "G1", "G2", "S"]))
+
+## hypertuning
+
+param_grid = {
+    'n_estimators': [900, 1000, 1500]              
+    #'max_depth': [50, 60, 70]          
+}
+
+# Set up GridSearch with 10-fold cross-validation optimizing for accuracy
+grid_search = GridSearchCV(
+    estimator=rf,
+    param_grid=param_grid,
+    cv=10,
+    scoring='accuracy',
+    n_jobs=-1
+)
+
+# Fit the model to your data
+grid_search.fit(X, y)
+
+#Output best settings and best accuracy
+print("Best parameters:", grid_search.best_params_)
+print("Best cross-validation accuracy:", grid_search.best_score_)
