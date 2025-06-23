@@ -1,0 +1,11 @@
+,Overall,G0,G1,G2,S
+RF (full),0.9745762711864406,1.0,0.9779179810725552,0.9621848739495799,0.9580952380952381
+RF (top 40),,,,,
+Multinomial Logistic Regression (full),,,,,
+Multinomial Logistic Regression (top40),,,,,
+XGBoost (full),,,,,
+XGBoost (top 40),,,,,
+SVM (full),,,,,
+SVM (top 40),,,,,
+MLP (full),,,,,
+MLP (top 40),,,,,
