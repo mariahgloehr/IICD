@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 import numpy.random as r
 from random import sample
 from joblib import Parallel, delayed
-from .util_locomp import buildMPClass,predictMPClass,ztest,getNC
+from .util_locomp import buildMPClass,predictMPClass,ztest,ztest_adjust,getNC
 
 class LOCOMPClass():
     """ 
