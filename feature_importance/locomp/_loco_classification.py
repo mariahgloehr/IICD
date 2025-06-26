@@ -97,8 +97,8 @@ class LOCOMPClass():
         ress['i'] = np.repeat(range(N),M)
         ress['j'] = np.tile(range(M),N)
         ress['true_y'] = np.repeat(self.Y,M)
-        print(ress)
         ress['resid_loco'] = getNC(ress['true_y'], ress[[0,1]])
+        print(ress)
         ress['resid_loo'] = np.repeat(resids_LOO,M)
         ress['zz'] = ress['resid_loco'] -ress['resid_loo']
 
