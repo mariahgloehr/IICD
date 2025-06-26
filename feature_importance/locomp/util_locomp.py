@@ -67,6 +67,7 @@ def predictMPClass(X,Y,X1, n_ratio,m_ratio,B,fit_func):
         for i in (clas):
             if i not in prob.columns:
                 prob[i]=0
+        prob = prob[clas]
     ############################################
         predictions.append(np.array(prob))
         in_mp_obs[b,idx_I]=True
