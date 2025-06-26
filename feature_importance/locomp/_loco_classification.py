@@ -93,12 +93,13 @@ class LOCOMPClass():
         else:
             ff=self.selected_features
         results = Parallel(n_jobs=-1)(delayed(get_loco)(i,j) for i in range(N) for j in range(M))
-        ress = pd.DataFrame(results)
+        ress = pd.DataFrame(results, columns=clas)
+        #ress = pd.DataFrame(results)
         ress['i'] = np.repeat(range(N),M)
         ress['j'] = np.tile(range(M),N)
         ress['true_y'] = np.repeat(self.Y,M)
-        ress['resid_loco'] = getNC(ress['true_y'], ress[[0,1]])
-        print(ress)
+        ress['resid_loco'] = getNC(ress['true_y'], ress[clas])
+        #ress['resid_loco'] = getNC(ress['true_y'], ress[[0,1]])
         ress['resid_loo'] = np.repeat(resids_LOO,M)
         ress['zz'] = ress['resid_loco'] -ress['resid_loo']
 
