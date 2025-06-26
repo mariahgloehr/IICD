@@ -86,7 +86,6 @@ class LOCOMPClass():
         #############################
         def get_loco(i,j):
             b_keep_f = list(set(np.argwhere(~(in_mp_feature[:,j])).reshape(-1)) & set(np.argwhere(~(in_mp_obs[:,i])).reshape(-1)))
-            print('get_loco')
             return predictions[b_keep_f,i].mean(0)
         
         if len(self.selected_features)==0:
@@ -98,6 +97,7 @@ class LOCOMPClass():
         ress['i'] = np.repeat(range(N),M)
         ress['j'] = np.tile(range(M),N)
         ress['true_y'] = np.repeat(self.Y,M)
+        print(ress)
         ress['resid_loco'] = getNC(ress['true_y'], ress[[0,1]])
         ress['resid_loo'] = np.repeat(resids_LOO,M)
         ress['zz'] = ress['resid_loco'] -ress['resid_loo']
