@@ -80,13 +80,13 @@ class LOCOMPClass():
         with_j = map(lambda i: predictions[b_keep[i],i].mean(0),range(N))
         with_j = pd.DataFrame(list(with_j), columns=clas)
         resids_LOO = getNC(self.Y, with_j)
-        print(resids_LOO)
 
         ################################
         ######## FIND LOCO
         #############################
         def get_loco(i,j):
             b_keep_f = list(set(np.argwhere(~(in_mp_feature[:,j])).reshape(-1)) & set(np.argwhere(~(in_mp_obs[:,i])).reshape(-1)))
+            print('get_loco')
             return predictions[b_keep_f,i].mean(0)
         
         if len(self.selected_features)==0:
