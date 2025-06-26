@@ -56,17 +56,18 @@ def predictMPClass(X,Y,X1, n_ratio,m_ratio,B,fit_func):
     N = len(X)
     M = len(X[0])
     N1 = len(X1)
-    clas=set(Y)
+    clas=list(set(Y))
 
     in_mp_obs,in_mp_feature = np.zeros((B,N),dtype=bool),np.zeros((B,M),dtype=bool)
     predictions=[]
     for b in range(B):
         [idx_I,idx_F,x_mp,y_mp] = buildMPClass(X,Y,n_ratio,m_ratio)
         model = fit_func(x_mp,y_mp)
-        prob = pd.DataFrame(model.predict_proba(X1[:, idx_F]), columns=model.classes_)
+        prob = pd.DataFrame(model.predict_proba(X1[:, idx_F]), columns=list(set(y_mp)))
         for i in (clas):
             if i not in prob.columns:
                 prob[i]=0
+        prob = prob[clas]
     ############################################
         predictions.append(np.array(prob))
         in_mp_obs[b,idx_I]=True
