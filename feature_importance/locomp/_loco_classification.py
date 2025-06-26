@@ -77,8 +77,11 @@ class LOCOMPClass():
             sel_2.shape = (2,10)
             diff.append(np.square(predictions[sel_2[0],i][:,0] - predictions[sel_2[1],i][:,0]).mean())
             
-        with_j_iter = map(lambda i: predictions[b_keep[i],i].mean(0),range(N))
-        with_j = pd.DataFrame(list(with_j_iter), columns=clas)
+        with_j_iter = list(map(lambda i: predictions[b_keep[i],i].mean(0),range(N)))
+        print("First few rows of with_j_iter:")
+        for row in with_j_iter[:5]:
+            print(f"shape: {row.shape} | value: {row}")
+        with_j = pd.DataFrame(with_j_iter, columns=clas)
         resids_LOO = getNC(self.Y, with_j)
 
         ################################
