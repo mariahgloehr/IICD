@@ -79,7 +79,6 @@ class LOCOMPClass():
             
         with_j = map(lambda i: predictions[b_keep[i],i].mean(0),range(N))
         with_j = pd.DataFrame(list(with_j), columns=clas)
-        print("prob columns:", with_j.columns.tolist())
         resids_LOO = getNC(self.Y, with_j)
 
         ################################
