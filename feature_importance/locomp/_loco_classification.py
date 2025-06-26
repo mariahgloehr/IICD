@@ -102,6 +102,7 @@ class LOCOMPClass():
         #ress['resid_loco'] = getNC(ress['true_y'], ress[[0,1]])
         ress['resid_loo'] = np.repeat(resids_LOO,M)
         ress['zz'] = ress['resid_loco'] -ress['resid_loo']
+        print(ress)
 
 
         inf_z = np.zeros((len(ff),4))
