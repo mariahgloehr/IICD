@@ -63,7 +63,7 @@ def predictMPClass(X,Y,X1, n_ratio,m_ratio,B,fit_func):
     for b in range(B):
         [idx_I,idx_F,x_mp,y_mp] = buildMPClass(X,Y,n_ratio,m_ratio)
         model = fit_func(x_mp,y_mp)
-        prob = pd.DataFrame(model.predict_proba(X1[:, idx_F]), columns=sorted(np.unique(y_mp)))
+        prob = pd.DataFrame(model.predict_proba(X1[:, idx_F]), columns=list(sorted(np.unique(y_mp))))
         for i in (clas):
             if i not in prob.columns:
                 prob[i]=0
