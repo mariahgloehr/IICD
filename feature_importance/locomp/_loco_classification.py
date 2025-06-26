@@ -80,6 +80,7 @@ class LOCOMPClass():
         with_j = map(lambda i: predictions[b_keep[i],i].mean(0),range(N))
         with_j = pd.DataFrame(list(with_j), columns=clas)
         resids_LOO = getNC(self.Y, with_j)
+        print(resids_LOO)
 
         ################################
         ######## FIND LOCO
