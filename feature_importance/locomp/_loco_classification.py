@@ -102,10 +102,10 @@ class LOCOMPClass():
         #ress['resid_loco'] = getNC(ress['true_y'], ress[[0,1]])
         ress['resid_loo'] = np.repeat(resids_LOO,M)
         ress['zz'] = ress['resid_loco'] -ress['resid_loo']
-        print(ress)
+        #print(ress)
 
 
-        inf_z = np.zeros((len(ff),4))
+        inf_z = np.zeros((len(ff),5))
         for idd,j in enumerate(ff): 
             inf_z[idd] = ztest(ress[ress.j==idd].zz,self.alpha,MM=len(ff),bonf_correct =self.bonf)
         ###########################
