@@ -78,6 +78,10 @@ class LOCOMPClass():
             diff.append(np.square(predictions[sel_2[0],i][:,0] - predictions[sel_2[1],i][:,0]).mean())
             
         with_j = map(lambda i: predictions[b_keep[i],i].mean(0),range(N))
+        rows = list(with_j)
+        print(f"First few rows of with_j_iter:")
+        for r in rows[:5]:
+            print(f"shape: {np.shape(r)} | value: {r}")
 
         try:
             with_j = pd.DataFrame(list(with_j), columns=list(clas))
