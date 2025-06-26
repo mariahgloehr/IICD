@@ -77,6 +77,14 @@ class LOCOMPClass():
             sel_2.shape = (2,10)
             diff.append(np.square(predictions[sel_2[0],i][:,0] - predictions[sel_2[1],i][:,0]).mean())
 
+        try:
+            with_j = pd.DataFrame(list(with_j), columns=list(clas))
+        except Exception as e:
+            print("Error building with_j dataframe")
+            print(f"clas: {clas}")
+            print(f"with_j example: {predictions[b_keep[0], 0]}")
+            raise e
+
         with_j = map(lambda i: predictions[b_keep[i],i].mean(0),range(N))
         with_j = pd.DataFrame(list(with_j), columns=clas)
         resids_LOO = getNC(self.Y, with_j)
