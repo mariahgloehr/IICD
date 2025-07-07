@@ -39,4 +39,8 @@ for (i in indices){
 }
 ```
 
+```{r}
+write.csv(all_minipatch_results, "all_minipatch_results.csv", row.names = FALSE)
+```
+
 
