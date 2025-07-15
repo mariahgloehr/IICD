@@ -161,7 +161,7 @@ def getCI(delta_cap, alpha=0.1):
     return ci
 
 
-def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_pairs, alpha=0.1, bonferroni=False):
+#def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_pairs, alpha=0.1, bonferroni=False):
     """
     Computes interaction metrics (iLOCO) for multiple feature pairs.
 
@@ -204,3 +204,53 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_pairs, alpha=0
 
     return results
 
+import multiprocessing as mp
+from functools import partial
+from scipy.stats import norm
+import numpy as np
+
+def compute_interaction_for_pair(j1, j2, Y, predictions, mp_observations, mp_features, alpha):
+    r12, r1, r2, r = computeDeltaCap(Y, j1, j2, predictions, mp_observations, mp_features)
+    dc = r1 + r2 - r12 - r
+    iloco = np.mean(dc)
+    iloco_max = max(0, iloco)
+    iloco_ratio = iloco / np.mean(r)
+    dc_ci = r1 - r
+    ci = getCI(dc_ci, alpha=alpha)
+
+    return ((j1, j2), {
+        'iloco': iloco,
+        'iloco_max': iloco_max,
+        'iloco_ratio': iloco_ratio,
+        'ci': ci
+    })
+
+def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_pairs, alpha=0.1, bonferroni=False, n_jobs=None):
+    """
+    Parallelized computation of interaction metrics (iLOCO) for feature pairs.
+
+    Parameters:
+    - n_jobs: number of processes (default: all cores)
+
+    Returns:
+    - dict: results for each (j1, j2) pair
+    """
+    predictions, mp_observations, mp_features = predict(X, Y, n_ratio, m_ratio, B, model)
+
+    # Adjust alpha for Bonferroni correction
+    adjusted_alpha = alpha / len(feature_pairs) if bonferroni else alpha
+
+    # Use partial to pass fixed args
+    func = partial(
+        compute_interaction_for_pair,
+        Y=Y,
+        predictions=predictions,
+        mp_observations=mp_observations,
+        mp_features=mp_features,
+        alpha=adjusted_alpha
+    )
+
+    with mp.Pool(processes=n_jobs) as pool:
+        results_list = pool.starmap(func, feature_pairs)
+
+    return dict(results_list)
