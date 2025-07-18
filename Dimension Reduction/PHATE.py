@@ -7,26 +7,6 @@ x = cell_cycle["PHATE_1"]
 y = cell_cycle["PHATE_2"]
 labels = cell_cycle['phase']
 
-rf_loco = pd.read_csv('/Users/mariahloehr/IICD/IICD/LOCO/rf_loco_full.csv')
-xgb_loco = pd.read_csv('/Users/mariahloehr/IICD/IICD/LOCO/xgb_loco_full.csv')
-mlp_loco = pd.read_csv('/Users/mariahloehr/IICD/IICD/LOCO/mlp_loco_full.csv')
-
-reference_row = rf_loco.loc[["feature"]]  # Keep as DataFrame (not Series)
-
-# Drop the reference row from each DataFrame
-df1_no_ref = rf_loco.drop("feature")
-df2_no_ref = xgb_loco.drop("feature")
-df3_no_ref = mlp_loco.drop("feature")
-
-# Add the remaining dataframes together
-summed = df1_no_ref + df2_no_ref + df3_no_ref
-
-# Add the reference row back
-merged = pd.concat([reference_row, summed])
-
-# Optional: sort if needed
-merged = merged.sort_index()
-
 phase_to_color = {'G0': 0, 'G1': 1, 'S': 2, 'G2': 3, 'M': 4}
 colors = labels.map(phase_to_color)
 
