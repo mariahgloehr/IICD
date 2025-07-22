@@ -14,7 +14,7 @@ colors = labels.map(phase_to_color)
 plt.figure(figsize=(10, 8))
 scatter = plt.scatter(x, y, c=colors,
                       cmap='tab10', alpha=0.6)
-plt.title('PHATE Embedding of Single-Cell Data', fontsize = 14)
+plt.title('PHATE Embedding of Single-Cell Data Colored by Phase', fontsize = 16)
 plt.xlabel('PHATE 1')
 plt.ylabel('PHATE 2')
 #plt.colorbar(scatter, ticks=['G0', 'G1', 'S', 'G2', 'M'], label='Phase')
