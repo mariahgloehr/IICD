@@ -50,6 +50,6 @@ m_ratio = 0.6
 n_ratio = 0.6
 B = 5000
 
-pred_xgb, obs_xgb, feats_xgb = predict(X, y, n_ratio, m_ratio, B, model = xgbreg)
+pred_xgb, obs_xgb, feats_xgb = il.predict(X, y, n_ratio, m_ratio, B, model = xgbreg)
 
 np.savez("ensemble_xgb.npz", predictions=pred_xgb, obs=obs_xgb, feats=feats_xgb)

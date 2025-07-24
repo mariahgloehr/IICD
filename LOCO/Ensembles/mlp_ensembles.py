@@ -11,7 +11,7 @@ from sklearn.neural_network import MLPRegressor
 import itertools
 
 import sys
-sys.path.append("feature_importance")
+sys.path.append("/Users/mariahloehr/IICD/IICD/feature_importance")
 
 import locomp
 from locomp import *
@@ -26,7 +26,7 @@ import functions_case as il
 import importlib
 
 # Load data
-df = pd.read_csv("Data/cell_cycle_tidied.csv")
+df = pd.read_csv("/Users/mariahloehr/IICD/IICD/Data/cell_cycle_tidied.csv")
 
 # Define features and target
 X = df.drop(columns=['phase', 'age', 'PHATE_1', 'PHATE_2'])  # Features
@@ -36,18 +36,6 @@ feature_names = X.columns.tolist()
 feature_pairs = list(itertools.combinations(range(X.shape[1]), 2))
 X = X.to_numpy()
 y = y.to_numpy()
-
-DecisionTreeReg = DecisionTreeRegressor(max_depth = 20, 
-                                 max_features=150,
-                                 random_state=949
-                                 )
-
-xgbreg = GradientBoostingRegressor(
-        n_estimators=10,       # fixed boosting rounds
-        learning_rate=0.5, # hyperparameters from XGB model
-        max_depth=5,
-        random_state=949
-    )
 
 # define fit_func
 MLPreg = MLPRegressor(max_iter=200,
@@ -63,10 +51,6 @@ m_ratio = 0.6
 n_ratio = 0.6
 B = 5000
 
-pred_rf, obs_rf, feats_rf = predict(X, y, n_ratio, m_ratio, B, model = DecisionTreeReg)
-pred_xgb, obs_xgb, feats_xgb = predict(X, y, n_ratio, m_ratio, B, model = xgbreg)
-pred_mlp, obs_mlp, feats_mlp = predict(X, y, n_ratio, m_ratio, B, model = MLPreg)
+pred_mlp, obs_mlp, feats_mlp = il.predict(X, y, n_ratio, m_ratio, B, model = MLPreg)
 
-np.savez("ensemble_rf.npz", predictions=pred_rf, obs=obs_rf, feats=feats_rf)
-np.savez("ensemble_xgb.npz", predictions=pred_xgb, obs=obs_xgb, feats=feats_xgb)
 np.savez("ensemble_mlp.npz", predictions=pred_mlp, obs=obs_mlp, feats=feats_mlp)

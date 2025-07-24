@@ -48,6 +48,6 @@ m_ratio = 0.6
 n_ratio = 0.6
 B = 5000
 
-pred_rf, obs_rf, feats_rf = predict(X, y, n_ratio, m_ratio, B, model = DecisionTreeReg)
+pred_rf, obs_rf, feats_rf = il.predict(X, y, n_ratio, m_ratio, B, model = DecisionTreeReg)
 
 np.savez("ensemble_rf.npz", predictions=pred_rf, obs=obs_rf, feats=feats_rf)
