@@ -65,7 +65,7 @@ class LOCOMPClass():
         ## Find LOO
         ############################
         diff=[]
-        b_keep = pd.DataFrame(~in_mp_obs).apply(lambda i: np.array(i[i].index))
+        b_keep = pd.DataFrame(~in_mp_obs, columns=range(N)).apply(lambda i: np.array(i[i].index))
 
         #############################
         ## Find LOO
