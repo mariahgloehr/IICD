@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+
+ensemble_rf.npz
+ensemble_mlp.npz
+ensemble_xgb.npz
