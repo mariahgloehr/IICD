@@ -108,9 +108,10 @@ class LOCOMPClass():
         ress['zz'] = ress['resid_loco'] -ress['resid_loo']
         #print(ress)
 
-        inf_z = np.zeros((len(ff),5)) #added
-        for k, j in enumerate(ff): 
-            inf_z[k] = ztest(ress[ress.j == j].zz, self.alpha, MM=len(ff), bonf_correct=self.bonf)
+        inf_z = np.zeros((len(ff), 5))
+        for k, idd in enumerate(ff):
+            inf_z[k] = ztest(ress[ress.j==idd].zz, self.alpha, MM=len(ff), bonf_correct=self.bonf)
+
         #inf_z = np.zeros((len(ff),5))
         #for idd in enumerate(ff): 
         #    inf_z[idd] = ztest(ress[ress.j==idd].zz,self.alpha,MM=len(ff),bonf_correct =self.bonf)
