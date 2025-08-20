@@ -106,8 +106,8 @@ class LOCOMPClass():
 
 
         inf_z = np.zeros((len(ff),5))
-        for idd in enumerate(ff): 
-            inf_z[idd] = ztest(ress[ress.j==idd].zz,self.alpha,MM=len(ff),bonf_correct =self.bonf)
+        for idd, j in enumerate(ff): 
+            inf_z[idd] = ztest(ress[ress.j == idd].zz,self.alpha,MM=len(ff),bonf_correct =self.bonf)
         ###########################
         self.loco_ci=inf_z
         self.info=ress
