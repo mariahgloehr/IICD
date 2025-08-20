@@ -52,27 +52,60 @@ def predictMPReg(X,Y,X1, n_ratio,m_ratio,B,fit_func):
     return [np.array(predictions),in_mp_obs,in_mp_feature]
 
 
-def predictMPClass(X,Y,X1, n_ratio,m_ratio,B,fit_func):
+#def predictMPClass(X,Y,X1, n_ratio,m_ratio,B,fit_func):
+#    N = len(X)
+#    M = len(X[0])
+#    N1 = len(X1)
+#    clas=list(set(Y))
+
+#    in_mp_obs,in_mp_feature = np.zeros((B,N),dtype=bool),np.zeros((B,M),dtype=bool)
+#    predictions=[]
+#    for b in range(B):
+#        [idx_I,idx_F,x_mp,y_mp] = buildMPClass(X,Y,n_ratio,m_ratio)
+#        model = fit_func(x_mp,y_mp)
+#        prob = pd.DataFrame(model.predict_proba(X1[:, idx_F]), columns=list(set(y_mp)))
+#        for i in (clas):
+#            if i not in prob.columns:
+#                prob[i]=0
+#        #prob = prob[clas]
+    ############################################
+#        predictions.append(np.array(prob))
+#        in_mp_obs[b,idx_I]=True
+#        in_mp_feature[b,idx_F]=True  
+#    return [np.array(predictions),in_mp_obs,in_mp_feature]
+from joblib import Parallel, delayed
+
+def predictMPClass(X, Y, X1, n_ratio, m_ratio, B, fit_func, n_jobs=-1):
     N = len(X)
     M = len(X[0])
-    N1 = len(X1)
-    clas=list(set(Y))
+    clas = list(set(Y))
 
-    in_mp_obs,in_mp_feature = np.zeros((B,N),dtype=bool),np.zeros((B,M),dtype=bool)
-    predictions=[]
-    for b in range(B):
-        [idx_I,idx_F,x_mp,y_mp] = buildMPClass(X,Y,n_ratio,m_ratio)
-        model = fit_func(x_mp,y_mp)
+    def run_one_patch(b):
+        idx_I, idx_F, x_mp, y_mp = buildMPClass(X, Y, n_ratio, m_ratio)
+        model = fit_func(x_mp, y_mp)
         prob = pd.DataFrame(model.predict_proba(X1[:, idx_F]), columns=list(set(y_mp)))
-        for i in (clas):
+        for i in clas:
             if i not in prob.columns:
-                prob[i]=0
-        #prob = prob[clas]
-    ############################################
-        predictions.append(np.array(prob))
-        in_mp_obs[b,idx_I]=True
-        in_mp_feature[b,idx_F]=True  
-    return [np.array(predictions),in_mp_obs,in_mp_feature]
+                prob[i] = 0
+        return np.array(prob), idx_I, idx_F
+
+    # Parallel loop instead of for b in range(B)
+    results = Parallel(n_jobs=n_jobs, verbose=10)(
+        delayed(run_one_patch)(b) for b in range(B)
+    )
+
+    # Now unpack results into same structures
+    predictions = []
+    in_mp_obs = np.zeros((B, N), dtype=bool)
+    in_mp_feature = np.zeros((B, M), dtype=bool)
+
+    for b, (prob, idx_I, idx_F) in enumerate(results):
+        predictions.append(prob)
+        in_mp_obs[b, idx_I] = True
+        in_mp_feature[b, idx_F] = True
+
+    return [np.array(predictions), in_mp_obs, in_mp_feature]
+
 
 def getNC(true_y,prob,method = 'prob1'):
     if method=='prob2':
