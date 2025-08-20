@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 import numpy.random as r
 from random import sample
 from joblib import Parallel, delayed
-from .util_locomp import buildMPClass,predictMPClass,ztest,getNC
+from .util_locomp import buildMPClass,predictMPClass,ztest,ztest_adjust,getNC
 
 class LOCOMPClass():
     """ 
@@ -65,7 +65,7 @@ class LOCOMPClass():
         ## Find LOO
         ############################
         diff=[]
-        b_keep = pd.DataFrame(~in_mp_obs, columns=range(N)).apply(lambda i: np.array(i[i].index))
+        b_keep = pd.DataFrame(~in_mp_obs).apply(lambda i: np.array(i[i].index))
 
         #############################
         ## Find LOO
@@ -76,7 +76,7 @@ class LOCOMPClass():
             sel_2 = np.array(sample(list(b_keep[i]),20))
             sel_2.shape = (2,10)
             diff.append(np.square(predictions[sel_2[0],i][:,0] - predictions[sel_2[1],i][:,0]).mean())
-
+            
         with_j = map(lambda i: predictions[b_keep[i],i].mean(0),range(N))
         with_j = pd.DataFrame(list(with_j), columns=clas)
         resids_LOO = getNC(self.Y, with_j)
@@ -93,17 +93,20 @@ class LOCOMPClass():
         else:
             ff=self.selected_features
         results = Parallel(n_jobs=-1)(delayed(get_loco)(i,j) for i in range(N) for j in range(M))
-        ress = pd.DataFrame(results)
+        ress = pd.DataFrame(results, columns=clas)
+        #ress = pd.DataFrame(results)
         ress['i'] = np.repeat(range(N),M)
         ress['j'] = np.tile(range(M),N)
         ress['true_y'] = np.repeat(self.Y,M)
-        ress['resid_loco'] = getNC(ress['true_y'], ress[[0,1]])
+        ress['resid_loco'] = getNC(ress['true_y'], ress[clas])
+        #ress['resid_loco'] = getNC(ress['true_y'], ress[[0,1]])
         ress['resid_loo'] = np.repeat(resids_LOO,M)
         ress['zz'] = ress['resid_loco'] -ress['resid_loo']
+        #print(ress)
 
 
-        inf_z = np.zeros((len(ff),4))
-        for idd,j in enumerate(ff): 
+        inf_z = np.zeros((len(ff),5))
+        for idd in enumerate(ff): 
             inf_z[idd] = ztest(ress[ress.j==idd].zz,self.alpha,MM=len(ff),bonf_correct =self.bonf)
         ###########################
         self.loco_ci=inf_z
