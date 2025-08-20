@@ -42,16 +42,16 @@ class LOCOMPClass():
     
     """
     
-    def __init__(self,X,Y,n_ratio,m_ratio,B,fit_func, predictions, in_mp_obs, in_mp_features, selected_features=[0],alpha=0.1,bonf=True):
+    def __init__(self,X,Y,n_ratio,m_ratio,B,fit_func, selected_features=[0],alpha=0.1,bonf=True):
         self.X=X
         self.Y=Y
         self.n_ratio=n_ratio
         self.m_ratio=m_ratio
         self.B = B
         self.fit_func=fit_func
-        self.predictions = predictions #added
-        self.in_mp_obs = in_mp_obs #added
-        self.in_mp_features = in_mp_features #added
+        #self.predictions = predictions #added
+        #self.in_mp_obs = in_mp_obs #added
+        #self.in_mp_features = in_mp_features #added
         self.selected_features=selected_features
         self.alpha=alpha
         self.bonf=bonf
@@ -61,8 +61,8 @@ class LOCOMPClass():
         M = len(self.X[0])
         clas=np.unique(self.Y)
 
-        [predictions,in_mp_obs,in_mp_feature]= [self.predictions, self.in_mp_obs, self.in_mp_features] #added
-        #[predictions,in_mp_obs,in_mp_feature]= predictMPClass(self.X,self.Y,self.X,self.n_ratio,self.m_ratio,self.B,self.fit_func)
+        #[predictions,in_mp_obs,in_mp_feature]= [self.predictions, self.in_mp_obs, self.in_mp_features] #added
+        [predictions,in_mp_obs,in_mp_feature]= predictMPClass(self.X,self.Y,self.X,self.n_ratio,self.m_ratio,self.B,self.fit_func)
         zeros=False
 
         #############################
