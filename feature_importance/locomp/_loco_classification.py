@@ -62,7 +62,7 @@ class LOCOMPClass():
         clas=np.unique(self.Y)
 
         #[predictions,in_mp_obs,in_mp_feature]= [self.predictions, self.in_mp_obs, self.in_mp_features] #added
-        [predictions,in_mp_obs,in_mp_feature]= predictMPClass(self.X,self.Y,self.X,self.n_ratio,self.m_ratio,self.B,self.fit_func)
+        [predictions,in_mp_obs,in_mp_feature]= predictMPClass(self.X,self.Y,self.X,self.n_ratio,self.m_ratio,self.B,self.fit_func, n_jobs = -1)
         zeros=False
 
         #############################
