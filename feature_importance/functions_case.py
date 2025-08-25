@@ -153,6 +153,136 @@ def computeDeltaCap(Y, j1, j2, predictions, mp_observations, mp_features,
 
     return residual_loco12, residual_loco1,  residual_loco2, residual_loo
 
+def computeDeltaCap_xent(Y,
+                         j1, j2,
+                         predictions,
+                         mp_observations,
+                         mp_features,
+                         eps: float = 1e-12):
+    """
+    Cross-entropy (log loss) version of computeDeltaCap that supports:
+    - Binary or multiclass
+    - Predictions as probabilities OR hard labels per patch
+    Parameters
+    ----------
+    Y : array-like
+    Labels. Binary: shape (n,) in {0,1}. Multiclass: (n,) ints 0..K-1 or one-hot (n,K).
+    j1, j2 : int
+    Feature indices to test for LOCO.
+    predictions : np.ndarray
+    One of:
+    - (n,B) floats in [0,1]: binary probabilities P(y=1) per patch
+    - (n,B) ints in {0,1}: binary hard labels per patch
+    - (n,B,K) floats: multiclass probs per patch (sum=1 along K)
+    - (n,B) ints 0..K-1: multiclass hard labels per patch
+    mp_observations : (n,B) bool/int
+    1 if obs used in patch, 0 otherwise.
+    mp_features : (p,B) bool/int
+    1 if feature used in patch, 0 otherwise.
+    eps : float
+    Numerical stability for logs.
+    Returns
+    -------
+    residual_loco12, residual_loco1, residual_loco2, residual_loo : np.ndarray (length n)
+    """
+    Y = np.asarray(Y)
+    # ---------- infer K and convert Y to one-hot ----------
+    def to_one_hot(y, K=None):
+        y = np.asarray(y)
+        if y.ndim == 2: # already one-hot
+            return y.astype(float), y.shape[1]
+        if K is None:
+            K = int(np.nanmax(y)) + 1
+        Yk = np.zeros((y.shape[0], K), dtype=float)
+        Yk[np.arange(y.shape[0]), y.astype(int)] = 1.0
+        return Yk, K
+    # ---------- unify predictions to (n,B,K) "per-patch" probs -----------
+    P = np.asarray(predictions)
+    n, B = mp_observations.shape
+
+    if P.ndim == 3:
+        # (n,B,K) probs
+        nP, BP, K = P.shape
+        assert nP == n and BP == B
+        preds_k = P
+        # Y one-hot
+        if Y.ndim == 2:
+            Yk, K_y = Y.astype(float), Y.shape[1]
+        else:
+            Yk, K_y = to_one_hot(Y, K=K)
+        assert K_y == K, "Label classes and prediction classes mismatch."
+    
+    elif P.ndim == 2:
+        nP, BP = P.shape
+        assert nP == n and BP == B
+
+        # Distinguish binary probs vs hard labels
+        is_int_like = np.all(np.equal(P, np.round(P)))
+        if not is_int_like:
+        # assume binary *probabilities* (n,B) in [0,1]
+            p1 = P
+            p0 = 1.0 - p1
+            preds_k = np.stack([p0, p1], axis=-1) # (n,B,2)
+        if Y.ndim == 2:
+            Yk, K = Y.astype(float), Y.shape[1]
+            assert K == 2, "Binary probs given but Y has !=2 classes."
+        else:
+        # Y in {0,1}
+            Yk = np.stack([1 - Y, Y], axis=-1).astype(float)
+        K = 2
+
+    else:
+    # hard labels per patch: could be binary {0,1} or multiclass {0..K-1}
+        max_label = int(P.max())
+        K = max(2, max_label + 1)
+    # one-hot per patch, then average later to get empirical probs
+        preds_k = np.zeros((n, B, K), dtype=float)
+        rows = np.repeat(np.arange(n), B)
+        cols = P.astype(int).ravel()
+        preds_k.reshape(-1, K)[rows * 1 + 0, 0] # just to touch array (avoid linter warning)
+        preds_k[np.arange(n)[:, None], np.arange(B)[None, :], P.astype(int)] = 1.0
+
+        # Y to one-hot with same K
+        if Y.ndim == 2:
+            Yk, K_y = Y.astype(float), Y.shape[1]
+            assert K_y == K, "Hard-label preds imply K={}, but Y has K={}".format(K, K_y)
+        else:
+            Yk, _ = to_one_hot(Y, K=K)
+
+    #else:
+    #    raise ValueError("`predictions` must be 2D (n,B) or 3D (n,B,K).")
+    
+    # ---------- helper: masked mean over patches -> per-row probs (n,K) ----
+    def masked_mean_probs(preds_k, mask_bool):
+        w = mask_bool.astype(float) # (n,B)
+        denom = w.sum(axis=1, keepdims=True) # (n,1)
+        denom[denom == 0] = np.nan # mark rows with no kept patches
+        num = np.nansum(preds_k * w[..., None], axis=1) # (n,K)
+
+        return num / denom # (n,K), NaNs if denom==0
+        
+    # --------------- build masks (same logic as your regression fn) ----------
+    loo = 1 - mp_observations
+    mu_loo = masked_mean_probs(preds_k, loo)
+    loco1_mask = loo * (1 - mp_features[j1, :])
+    mu_loco1 = masked_mean_probs(preds_k, loco1_mask)
+    loco2_mask = loo * (1 - mp_features[j2, :])
+    mu_loco2 = masked_mean_probs(preds_k, loco2_mask)
+    loco12_mask = loco1_mask * loco2_mask
+    mu_loco12 = masked_mean_probs(preds_k, loco12_mask)
+
+    # ---------------- cross-entropy per row ----------------------------------
+    def xent(y_onehot, p):
+        p = np.clip(p, eps, 1 - eps)
+        return -np.nansum(y_onehot * np.log(p), axis=1) # (n,)
+    
+    residual_loo = xent(Yk, mu_loo)
+    residual_loco1 = xent(Yk, mu_loco1)
+    residual_loco2 = xent(Yk, mu_loco2)
+    residual_loco12 = xent(Yk, mu_loco12)
+    
+    return residual_loco12, residual_loco1, residual_loco2, residual_loo
+
 
 
 def getCI(delta_cap, alpha=0.1):
@@ -210,7 +340,7 @@ from scipy.stats import norm
 import numpy as np
 
 def compute_interaction_for_pair(j1, j2, Y, predictions, mp_observations, mp_features, alpha):
-    r12, r1, r2, r = computeDeltaCap(Y, j1, j2, predictions, mp_observations, mp_features)
+    r12, r1, r2, r = computeDeltaCap_xent(Y, j1, j2, predictions, mp_observations, mp_features)
     dc = r1 + r2 - r12 - r
     iloco = np.mean(dc)
     iloco_max = max(0, iloco)
