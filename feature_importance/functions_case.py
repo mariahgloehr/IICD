@@ -355,9 +355,9 @@ def compute_interaction_for_pair(j1, j2, Y, predictions, mp_observations, mp_fea
         'ci': ci
     })
 
-def featureInteractions(X, Y, n_ratio, m_ratio, B, model, 
+def featureInteractions(X, Y, n_ratio, m_ratio, B, 
                         predictions, mp_observations, mp_features, 
-                        feature_pairs, alpha=0.1, bonferroni=False, n_jobs=None):
+                        model, feature_pairs, alpha=0.1, bonferroni=False, n_jobs=None):
     """
     Parallelized computation of interaction metrics (iLOCO) for feature pairs.
 
