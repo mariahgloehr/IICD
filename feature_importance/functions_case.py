@@ -355,7 +355,9 @@ def compute_interaction_for_pair(j1, j2, Y, predictions, mp_observations, mp_fea
         'ci': ci
     })
 
-def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_pairs, alpha=0.1, bonferroni=False, n_jobs=None):
+def featureInteractions(X, Y, n_ratio, m_ratio, B, model, 
+                        predictions, mp_observations, mp_features, 
+                        feature_pairs, alpha=0.1, bonferroni=False, n_jobs=None):
     """
     Parallelized computation of interaction metrics (iLOCO) for feature pairs.
 
@@ -365,7 +367,7 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_pairs, alpha=0
     Returns:
     - dict: results for each (j1, j2) pair
     """
-    predictions, mp_observations, mp_features = predict(X, Y, n_ratio, m_ratio, B, model)
+    #predictions, mp_observations, mp_features = predict(X, Y, n_ratio, m_ratio, B, model)
 
     # Adjust alpha for Bonferroni correction
     adjusted_alpha = alpha / len(feature_pairs) if bonferroni else alpha
