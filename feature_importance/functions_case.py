@@ -199,13 +199,13 @@ def computeDeltaCap_xent(Y,
    
     # ---------- unify predictions to (n,B,K) "per-patch" probs -----------
     P = np.asarray(predictions)
-    #n, B = mp_observations.shape
-    B, n = mp_observations.shape
+    n, B = mp_observations.shape
+    #B, n = mp_observations.shape
 
     if P.ndim == 3:
         # (n,B,K) probs
-        #nP, BP, K = P.shape
-        BP, nP, K = P.shape
+        nP, BP, K = P.shape
+        #BP, nP, K = P.shape
         assert nP == n and BP == B
         preds_k = P
         # Y one-hot
