@@ -292,9 +292,9 @@ def getCI(delta_cap, alpha=0.1):
     return ci
 
 
-def featureInteractions(X, Y, n_ratio, m_ratio, B, model, 
+def featureInteractions(X, Y, n_ratio, m_ratio, B, 
                         predictions, mp_observations, mp_features,
-                        feature_pairs, alpha=0.1, bonferroni=False):
+                        model, feature_pairs, alpha=0.1, bonferroni=False):
     """
     Computes interaction metrics (iLOCO) for multiple feature pairs.
 
