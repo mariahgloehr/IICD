@@ -320,7 +320,7 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, model,
         adjusted_alpha = alpha
 
     for (j1, j2) in feature_pairs:
-        r12, r1, r2, r = computeDeltaCap(Y, j1, j2, predictions, mp_observations, mp_features)
+        r12, r1, r2, r = computeDeltaCap_xent(Y, j1, j2, predictions, mp_observations, mp_features)
         dc = r1 + r2 - r12 - r
         iloco = np.mean(dc)
         iloco_max = max(0, iloco)
