@@ -196,6 +196,7 @@ def computeDeltaCap_xent(Y,
         Yk = np.zeros((y.shape[0], K), dtype=float)
         Yk[np.arange(y.shape[0]), y.astype(int)] = 1.0
         return Yk, K
+   
     # ---------- unify predictions to (n,B,K) "per-patch" probs -----------
     P = np.asarray(predictions)
     n, B = mp_observations.shape

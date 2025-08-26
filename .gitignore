@@ -4,5 +4,7 @@
 .Ruserdata
 
 ensemble_rf.npz
+encoded_rf.npz
+
 ensemble_mlp.npz
 ensemble_xgb.npz
