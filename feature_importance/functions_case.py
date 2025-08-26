@@ -266,10 +266,10 @@ def computeDeltaCap_xent(Y,
     loo = 1 - mp_observations
     mu_loo = masked_mean_probs(preds_k, loo)
     #loco1_mask = loo * (1 - mp_features[j1, :])
-    loco1_mask = loo * (1 - mp_features[:, j1])
+    loco1_mask = loo * (1 - mp_features[:, j1][:, None])
     mu_loco1 = masked_mean_probs(preds_k, loco1_mask)
     #loco2_mask = loo * (1 - mp_features[j2, :])
-    loco2_mask = loo * (1 - mp_features[:, j2])
+    loco2_mask = loo * (1 - mp_features[:, j2][:, None])
     mu_loco2 = masked_mean_probs(preds_k, loco2_mask)
     loco12_mask = loco1_mask * loco2_mask
     mu_loco12 = masked_mean_probs(preds_k, loco12_mask)
