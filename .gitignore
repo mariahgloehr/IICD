@@ -7,4 +7,7 @@ ensemble_rf.npz
 encoded_rf.npz
 
 ensemble_mlp.npz
+encoded_xgb.npz
+
 ensemble_xgb.npz
+encoded_mlp.npz
