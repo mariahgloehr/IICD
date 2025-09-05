@@ -7,7 +7,7 @@ from sklearn.metrics import accuracy_score
 from scipy.stats import mode
 
 import sys
-sys.path.append("feature_importance")
+sys.path.append("/Users/mariahloehr/IICD/IICD/feature_importance")
 
 import locomp
 from locomp import *
@@ -25,7 +25,7 @@ import functions_case as il
 import importlib
 
 # Load data
-df = pd.read_csv("T47D.csv")
+df = pd.read_csv("/Users/mariahloehr/IICD/IICD/Cancer treatment/T47D.csv")
 
 from sklearn.preprocessing import LabelEncoder
 
@@ -70,7 +70,7 @@ def get_mp_metric(X, Y, n_ratio, m_ratio, B,
 
     return result
 
-data = np.load("encoded_mlp.npz")
+data = np.load("/Users/mariahloehr/IICD/IICD/Cancer treatment/LOCO/encoded_mlp.npz")
 
 # Access arrays
 predictions = data["predictions"]
