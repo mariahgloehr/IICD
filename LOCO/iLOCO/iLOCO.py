@@ -149,4 +149,4 @@ pairwise_names_str = [' & '.join(pair) for pair in pairwise_names]
 data = {'feature': pairwise_names_str, 'scores': mp_scores, 'ci': mp_ci }
 df = pd.DataFrame(data)
 
-df.to_csv("iloco_xgb.csv", index=False)
+df.to_csv("iloco_mlp.csv", index=False)
