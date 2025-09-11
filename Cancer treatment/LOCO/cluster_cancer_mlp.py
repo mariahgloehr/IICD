@@ -39,6 +39,51 @@ feature_names = X.columns.tolist()
 feature_pairs = list(itertools.combinations(range(X.shape[1]), 2))
 X = X.to_numpy()
 
+def featureInteractions(X, Y, n_ratio, m_ratio, B, 
+                        predictions, mp_observations, mp_features,
+                        model, feature_pairs, alpha=0.1, bonferroni=False):
+    """
+    Computes interaction metrics (iLOCO) for multiple feature pairs.
+
+    Parameters:
+    - X, Y: Feature matrix and target variable.
+    - n_ratio, m_ratio: Ratios for minipatching.
+    - B: Number of bootstraps.
+    - model: Base model used.
+    - feature_pairs: List of (j1, j2) feature index tuples.
+    - alpha: Significance level for confidence interval.
+    - bonferroni: If True, applies Bonferroni correction.
+
+    Returns:
+    - dict mapping (j1, j2) to metrics: iloco, iloco_max, iloco_ratio, ci
+    """
+    #predictions, mp_observations, mp_features = predict(X, Y, n_ratio, m_ratio, B, model)
+    results = {}
+
+    # Adjust alpha if Bonferroni is requested
+    if bonferroni:
+        adjusted_alpha = alpha / len(feature_pairs)
+    else:
+        adjusted_alpha = alpha
+
+    for (j1, j2) in feature_pairs:
+        r12, r1, r2, r = il.computeDeltaCap_xent(Y, j1, j2, predictions, mp_observations, mp_features)
+        dc = r1 + r2 - r12 - r
+        iloco = np.mean(dc)
+        iloco_max = max(0, iloco)
+        iloco_ratio = iloco / np.mean(r)
+        dc = r1 - r
+        ci = il.getCI(dc, alpha=adjusted_alpha)
+
+        results[(j1, j2)] = {
+            'iloco': iloco,
+            'iloco_max': iloco_max,
+            'iloco_ratio': iloco_ratio,
+            'ci': ci
+        }
+
+    return results
+
 def get_mp_metric(X, Y, n_ratio, m_ratio, B,
                    predictions, mp_observations, mp_features, 
                    model, feature_pairs):
@@ -64,7 +109,7 @@ def get_mp_metric(X, Y, n_ratio, m_ratio, B,
     #ensemble = il.Ensemble(model).fit(X, Y, n_ratio, m_ratio, B)
 
     # Compute feature interactions for the given list of feature pairs
-    result = il.featureInteractions(X, Y, n_ratio, m_ratio, B,
+    result = featureInteractions(X, Y, n_ratio, m_ratio, B,
                                     predictions, mp_observations, mp_features,
                                     model, feature_pairs, bonferroni=True)
 
