@@ -59,11 +59,11 @@ def sim_dat_case1(snr, N = 1000, M = 100, signal_features=5,seed=42, interaction
     return X, y
 
 
-def buildMP(X, Y, n_ratio, m_ratio):
+def buildMP(X, Y, n_ratio, m_ratio, perturbation_col=None):
     """
     Builds a minipatch. Returns:
     - idx_I = the chosen subset of observation indices
-    - idx_F = the chosen subset of feature indices
+    - idx_F = the chosen subset of feature indices (always includes perturbation_col if given)
     - x_mp  = the minipatch of observations
     - y_mp  = the minipatch of responses
     """
@@ -75,9 +75,20 @@ def buildMP(X, Y, n_ratio, m_ratio):
     # uniformly sample a subset of observations
     idx_I = np.random.choice(N, size=n, replace=False)
     idx_I.sort()
+
     # uniformly sample a subset of features
-    idx_F = np.random.choice(M, size=m, replace=False)
-    idx_F.sort()
+    ## ADDED
+    if perturbation_col is not None:
+        # sample remaining features excluding the perturbation column
+        candidate_features = [j for j in range(M) if j != perturbation_col]
+        sampled = np.random.choice(candidate_features, size=m-1, replace=False)
+        idx_F = np.sort(np.append(sampled, perturbation_col))
+    else:
+        idx_F = np.random.choice(M, size=m, replace=False)
+        idx_F.sort()
+    ##
+    #idx_F = np.random.choice(M, size=m, replace=False)
+    #idx_F.sort()
 
     ## record which obs/features are subsampled 
     x_mp = X[np.ix_(idx_I, idx_F)]
@@ -85,17 +96,27 @@ def buildMP(X, Y, n_ratio, m_ratio):
     return idx_I, idx_F, x_mp, y_mp
 
 class Ensemble:
-    def __init__(self, model):
-        self.base = model
+    # ADDED "models" for "model"
+    def __init__(self, models):
+        """
+        models: list of sklearn-compatible model instances to sample from
+        """
+        #self.base = models
+        self.models = models
 
-    def fit(self, X, Y, n_ratio, m_ratio, B):
+    def fit(self, X, Y, n_ratio, m_ratio, B, perturbation_col=None):
         N, M = X.shape
         self.mp_observations = np.zeros((N, B), dtype=bool)
         self.mp_features = np.zeros((M, B), dtype=bool)
         self.ensemble = [None] * B
+
         for b in range(B):
-            idx_I, idx_F, x_mp, y_mp = buildMP(X, Y, n_ratio, m_ratio)
-            self.ensemble[b] = clone(self.base).fit(x_mp, y_mp) 
+            idx_I, idx_F, x_mp, y_mp = buildMP(X, Y, n_ratio, m_ratio, perturbation_col)
+            # randomly select a model each time
+            model = np.random.choice(self.models)
+
+            #self.ensemble[b] = clone(self.base).fit(x_mp, y_mp) 
+            self.ensemble[b] = clone(model).fit(x_mp, y_mp) 
             self.mp_observations[idx_I, b] = True
             self.mp_features[idx_F, b] = True  
         return self
@@ -108,7 +129,7 @@ class Ensemble:
     
 
 
-def predict(X, Y, n_ratio, m_ratio, B, model):
+def predict(X, Y, n_ratio, m_ratio, B, models, perturbation_col = None):
     """
     Fits and predicts models
     """
@@ -116,8 +137,12 @@ def predict(X, Y, n_ratio, m_ratio, B, model):
     mp_observations = np.zeros((N, B), dtype=bool)
     mp_features = np.zeros((M, B), dtype=bool)
     predictions = np.empty((N, B))
+
     for b in range(B):
-        idx_I, idx_F, x_mp, y_mp = buildMP(X, Y, n_ratio, m_ratio)
+        idx_I, idx_F, x_mp, y_mp = buildMP(X, Y, n_ratio, m_ratio, perturbation_col=perturbation_col)
+
+        model = np.random.choice(models)
+        
         predictions[:, b] = model.fit(x_mp, y_mp).predict(X[:, idx_F])
         mp_observations[idx_I, b] = True
         mp_features[idx_F, b] = True  
