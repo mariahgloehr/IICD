@@ -141,8 +141,9 @@ def predict(X, Y, n_ratio, m_ratio, B, models, perturbation_col = None):
     for b in range(B):
         idx_I, idx_F, x_mp, y_mp = buildMP(X, Y, n_ratio, m_ratio, perturbation_col=perturbation_col)
 
-        model = np.random.choice(models)
-        
+        base_model = np.random.choice(models)
+        model = clone(base_model).fit(x_mp, y_mp)
+
         predictions[:, b] = model.fit(x_mp, y_mp).predict(X[:, idx_F])
         mp_observations[idx_I, b] = True
         mp_features[idx_F, b] = True  
