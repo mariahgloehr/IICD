@@ -456,11 +456,11 @@ def mp_and_featureInteractions_class(X, Y, n_ratio, m_ratio, B,
     """
     predictions, mp_observations, mp_features = predict(X, Y, n_ratio, m_ratio, B, models, perturbation_col)
 
-    predictions = np.transpose(predictions, (1, 0, 2))
+    #predictions = np.transpose(predictions, (1, 0, 2))
 
-    mp_observations = mp_observations.T  # → (n, B)
+    #mp_observations = mp_observations.T  # → (n, B)
 
-    mp_features = mp_features.T  # → (n, F)
+    #mp_features = mp_features.T  # → (n, F)
 
     results = {}
 
