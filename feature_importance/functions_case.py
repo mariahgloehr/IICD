@@ -179,7 +179,7 @@ def computeDeltaCap(Y, j1, j2, predictions, mp_observations, mp_features,
 
     return residual_loco12, residual_loco1,  residual_loco2, residual_loo
 
-def computeDeltaCap_xent(Y,
+def computeDeltaCap_xent_old(Y,
                          j1, j2,
                          predictions,
                          mp_observations,
@@ -315,7 +315,120 @@ def computeDeltaCap_xent(Y,
     
     return residual_loco12, residual_loco1, residual_loco2, residual_loo
 
+def _to_one_hot(y, K=None):
+    """Coerce labels to one-hot. Works with pandas Categorical, strings, ints."""
+    y = np.asarray(y)
+    if y.ndim == 2: # already one-hot
+        K = y.shape[1]
+        return y.astype(float), K
+    
+    # If y is non-numeric, map to integers 0..K-1
+    if not np.issubdtype(y.dtype, np.number):
+        # unique stable mapping
+        uniques, inv = np.unique(y, return_inverse=True)
+        y = inv
 
+    if K is None:
+        K = int(np.nanmax(y)) + 1
+    
+    Yk = np.zeros((y.shape[0], K), dtype=float)
+    Yk[np.arange(y.shape[0]), y.astype(int)] = 1.0
+    return Yk, K
+
+def _as_probabilities(P, K_hint=None):
+    """
+    Normalize per-patch predictions into probabilities with shape:
+    - binary: (n,B,2)
+    - multiclass: (n,B,K)
+    Accepts:
+    - (n,B,K) probs (we re-normalize on last axis)
+    - (n,B) in {0,1} hard labels -> one-hot then average later
+    - (n,B) floats in [0,1] -> binary probs (p1); expand to (p0,p1)
+    - (n,B) real-valued logits -> apply sigmoid -> probs
+    """
+    P = np.asarray(P)
+    if P.ndim == 3:
+        n,B,K = P.shape
+        # re-normalize defensively
+        denom = np.sum(P, axis=-1, keepdims=True)
+        denom[denom == 0] = np.nan
+        return P / denom, K
+    
+    if P.ndim != 2:
+        raise ValueError("`predictions` must be 2D (n,B) or 3D (n,B,K).")
+    
+    # 2D case
+    n,B = P.shape
+    # detect int-like (hard labels)
+    is_int_like = np.all(np.equal(P, np.round(P)))
+    if is_int_like and np.isfinite(P).all() and P.min() >= 0:
+        max_label = int(P.max())
+        K = max(2, max_label + 1)
+        preds_k = np.zeros((n,B,K), dtype=float)
+        preds_k[np.arange(n)[:,None], np.arange(B)[None,:], P.astype(int)] = 1.0
+        return preds_k, K
+
+    # not int-like: try to detect binary probabilities vs logits
+    if np.nanmin(P) >= 0.0 and np.nanmax(P) <= 1.0:
+        # treat as binary probabilities p1
+        p1 = P
+        p0 = 1.0 - p1
+        return np.stack([p0, p1], axis=-1), 2
+    
+    # looks like logits -> sigmoid to binary probs
+    p1 = 1.0 / (1.0 + np.exp(-P))
+    p0 = 1.0 - p1
+    return np.stack([p0, p1], axis=-1), 2
+
+def computeDeltaCap_xent(Y, j1, j2, predictions, mp_observations, mp_features, eps: float = 1e-12
+):
+    """
+    Cross-entropy LO(O/CO) for classification.
+    Handles categorical/string Y and mixed prediction formats.
+    """
+    # 1) Normalize labels to one-hot first (avoids `1 - Y` entirely)
+    Yk, K_y = _to_one_hot(Y)
+
+    # 2) Normalize predictions to probs with explicit K
+    preds_k, K_p = _as_probabilities(predictions, K_hint=Yk.shape[1])
+
+    # 3) Ensure class dimension matches
+    if K_p != K_y:
+        # If preds have 2 classes but Y has >2, or vice versa, this is a true mismatch
+        raise ValueError(f"Class count mismatch between labels (K={K_y}) and predictions (K={K_p}).")
+    
+    n, B = mp_observations.shape
+    assert preds_k.shape[0] == n and preds_k.shape[1] == B
+
+    def masked_mean_probs(preds, mask_bool):
+        w = mask_bool.astype(float) # (n,B)
+        denom = w.sum(axis=1, keepdims=True) # (n,1)
+        denom[denom == 0] = np.nan
+        num = np.nansum(preds * w[..., None], axis=1) # (n,K)
+        return num / denom
+    
+    # Masks (same as your regression version)
+    loo = 1 - mp_observations
+    mu_loo = masked_mean_probs(preds_k, loo)
+
+    loco1_mask = loo * (1 - mp_features[j1, :])
+    mu_loco1 = masked_mean_probs(preds_k, loco1_mask)
+
+    loco2_mask = loo * (1 - mp_features[j2, :])
+    mu_loco2 = masked_mean_probs(preds_k, loco2_mask)
+
+    loco12_mask = loco1_mask * loco2_mask
+    mu_loco12 = masked_mean_probs(preds_k, loco12_mask)
+
+    def xent(y_onehot, p):
+        p = np.clip(p, eps, 1 - eps)
+        return -np.nansum(y_onehot * np.log(p), axis=1)
+    
+    residual_loo = xent(Yk, mu_loo)
+    residual_loco1 = xent(Yk, mu_loco1)
+    residual_loco2 = xent(Yk, mu_loco2)
+    residual_loco12 = xent(Yk, mu_loco12)
+    return residual_loco12, residual_loco1, residual_loco2, residual_loo
 
 def getCI(delta_cap, alpha=0.1):
     sigma = np.std(delta_cap, ddof=1)
