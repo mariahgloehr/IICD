@@ -14,4 +14,6 @@ encoded_mlp.npz
 
 meta_ensemble.npz
 
+train_svm.npz
+
 MLP iLOCO.zip
