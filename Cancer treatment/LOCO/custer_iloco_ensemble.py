@@ -9,7 +9,7 @@ from scipy.stats import mode
 from sklearn.svm import SVC
 
 import sys
-sys.path.append("/Users/mariahloehr/IICD/IICD/feature_importance")
+sys.path.append("feature_importance")
 
 import locomp
 from locomp import *
@@ -27,7 +27,7 @@ import functions_case as il
 import importlib
 
 # Load data
-df = pd.read_csv("/Users/mariahloehr/IICD/IICD/Cancer treatment/T47D.csv")
+df = pd.read_csv("Cancer/T47D.csv")
 
 from sklearn.preprocessing import LabelEncoder
 
