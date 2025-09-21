@@ -64,9 +64,9 @@ svmclass = SVC(kernel='rbf', C = 400, gamma = 0.01, probability=True, random_sta
 
 J1 = 0
 J2 = 1
-m_ratio = 0.2
-n_ratio = 0.2
-B = 10
+m_ratio = 0.5
+n_ratio = 0.5
+B = 5000
 models = (DecisionTreeClass, xgbclass, svmclass)
 perturbation_col = perturbation_col
 
