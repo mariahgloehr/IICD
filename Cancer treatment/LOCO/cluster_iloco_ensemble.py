@@ -59,8 +59,13 @@ xgbclass = GradientBoostingClassifier(
     )
 
 # Define RBF-kernel SVM
-svmclass = SVC(kernel='rbf', C = 400, gamma = 0.01, probability=True, random_state=949
-              )
+svmclass = svmclass = svm_model = SVC(
+    kernel='rbf',
+    C=1.0,              
+    gamma='scale',
+    probability=True,
+    random_state=949
+)
 
 J1 = 0
 J2 = 1
