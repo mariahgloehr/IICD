@@ -137,7 +137,7 @@ def predict(X, Y, n_ratio, m_ratio, B, models, perturbation_col):
     return predictions, mp_observations, mp_features
 
 
-def computeDeltaCap(Y, j1, j2, predictions, mp_observations, mp_features, 
+def computeDeltaCap_second(Y, j1, j2, predictions, mp_observations, mp_features, 
         metric=np.square):
     """
     TODO: apply bonferroni correction if more than one test is made.
