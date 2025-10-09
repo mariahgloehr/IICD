@@ -207,7 +207,8 @@ def computeDeltaCap(Y, j1, j2, j3, predictions, mp_observations, mp_features, me
             residual_loco12, residual_loco13, residual_loco23, residual_loo)
 
 
-def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_triplets):
+def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_triplets,
+                        alpha = 0.1, bonferroni=False):
     """
     Computes interaction metrics (iLOCO) for multiple feature triplets.
 
@@ -230,6 +231,12 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_triplets):
     # Initialize results dictionary to store interaction metrics for each feature triplet
     results = {}
 
+    # Adjust alpha if Bonferroni is requested
+    if bonferroni:
+        adjusted_alpha = alpha / len(feature_triplets)
+    else:
+        adjusted_alpha = alpha
+
     # Loop over each feature triplet in the list
     for (j1, j2, j3) in feature_triplets:
         # Compute DeltaCap for the current feature triplet
@@ -239,7 +246,7 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_triplets):
         iloco_max = max(0, iloco)
         iloco_ratio = iloco / np.mean(r)
         dc = r1 - r
-        ci = getCI(dc, alpha = 0.1)
+        ci = getCI(dc, adjusted_alpha)
 
         # Store results for the current feature triplet in the dictionary
         results[(j1, j2, j3)] = {
