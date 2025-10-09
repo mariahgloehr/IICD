@@ -236,10 +236,17 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, model, feature_triplets):
         r123, r1, r2, r3, r12, r13, r23, r = computeDeltaCap(Y, j1, j2, j3, predictions, mp_observations, mp_features)
         dc = r1 + r2 + r3 - r12 - r13 - r23 + r123 - r
         iloco = np.mean(dc)
+        iloco_max = max(0, iloco)
+        iloco_ratio = iloco / np.mean(r)
+        dc = r1 - r
+        ci = getCI(dc, alpha = 0.1)
 
         # Store results for the current feature triplet in the dictionary
         results[(j1, j2, j3)] = {
-            'iloco': iloco
+            'iloco': iloco,
+            'iloco_max': iloco_max,
+            'iloco_ratio': iloco_ratio,
+            'ci': ci
         }
 
     return results
