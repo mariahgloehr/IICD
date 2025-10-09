@@ -92,7 +92,7 @@ def buildMP(X, Y, n_ratio, m_ratio, perturbation_col=None):
 
 class Ensemble:
     def __init__(self, models):
-        self.base = models
+        self.models = models
 
     def fit(self, X, Y, n_ratio, m_ratio, B, perturbation_col=None):
         N, M = X.shape
@@ -103,6 +103,7 @@ class Ensemble:
             idx_I, idx_F, x_mp, y_mp = buildMP(X, Y, n_ratio, m_ratio, perturbation_col)
             # randomly select a model each time
             model = np.random.choice(self.models)
+            
             self.ensemble[b] = clone(model).fit(x_mp, y_mp) 
             self.mp_observations[idx_I, b] = True
             self.mp_features[idx_F, b] = True  
