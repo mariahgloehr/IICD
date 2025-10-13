@@ -176,7 +176,7 @@ def getCI(delta_cap, alpha=0.1):
     return ci
 
 
-def computeDeltaCap(Y, j1, j2, j3, predictions, mp_observations, mp_features, metric=np.square):
+def computeDeltaCap_third(Y, j1, j2, j3, predictions, mp_observations, mp_features, metric=np.square):
     """
     Computes the squared error vectors from LOCO and LOO predictions for three variables.
     """
@@ -220,8 +220,8 @@ def computeDeltaCap(Y, j1, j2, j3, predictions, mp_observations, mp_features, me
             residual_loco12, residual_loco13, residual_loco23, residual_loo)
 
 
-def featureInteractions(X, Y, n_ratio, m_ratio, B, models, feature_triplets, 
-                        perturbation_col = None, alpha = 0.1, bonferroni=False):
+def featureInteractions(X, Y, n_ratio, m_ratio, B, models, feature_groups, 
+                        order = 2, perturbation_col = None, alpha = 0.1, bonferroni=False):
     """
     Computes interaction metrics (iLOCO) for multiple feature triplets.
 
@@ -231,12 +231,18 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, models, feature_triplets,
     n_ratio (float): Ratio parameter for predict function.
     m_ratio (float): Ratio parameter for predict function.
     B (int): Number of bootstrap samples.
-    model (object): Trained model to make predictions.
-    feature_triplets (list of tuples): List of tuples where each tuple contains three feature indices (j1, j2, j3).
+    models (list): List of trained models to make predictions, random one used for each minipatch.
+    feature_groups (list of tuples): List of tuples where each tuple contains either two (j1,j2)
+     or three feature indices (j1, j2, j3).
+    order (int): Integer for second or third order iLOCO.
+    perturbuation_col (string):
+    alpha (int):
+    bonferroni (boolean):
 
     Returns:
-    dict: Dictionary where keys are feature triplets (j1, j2, j3) and values are dictionaries containing:
+    dict: Dictionary where keys are feature pairs (j1, j2) or triplets (j1, j2, j3) and values are dictionaries containing:
           - 'iloco': The mean interaction value.
+          - iloco_max, iloco_ratio, ci
     """
     # Get predictions and model properties
     predictions, mp_observations, mp_features = predict(X, Y, n_ratio, m_ratio, B, models, perturbation_col)
@@ -246,28 +252,49 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, models, feature_triplets,
 
     # Adjust alpha if Bonferroni is requested
     if bonferroni:
-        adjusted_alpha = alpha / len(feature_triplets)
+        adjusted_alpha = alpha / len(feature_groups)
     else:
         adjusted_alpha = alpha
+        
+    if order == 2:
+        for (j1, j2) in feature_groups:
+            # Compute DeltaCap for the current feature pair
+            r12, r1, r2, r = computeDeltaCap_second(Y, j1, j2, predictions, mp_observations, mp_features)
+            dc = r1 + r2 - r12 - r
+            iloco = np.mean(dc)
+            iloco_max = max(0, iloco)
+            iloco_ratio = iloco / np.mean(r)
+            dc = r1 - r
+            ci = getCI(dc, adjusted_alpha)
 
+            # Store results for the current feature pair in the dictionary
+            results[(j1, j2)] = {
+                'iloco': iloco,
+                'iloco_max': iloco_max,
+                'iloco_ratio': iloco_ratio,
+                'ci': ci
+            }
+
+    if order == 3:
     # Loop over each feature triplet in the list
-    for (j1, j2, j3) in feature_triplets:
-        # Compute DeltaCap for the current feature triplet
-        r123, r1, r2, r3, r12, r13, r23, r = computeDeltaCap(Y, j1, j2, j3, predictions, mp_observations, mp_features)
-        dc = r1 + r2 + r3 - r12 - r13 - r23 + r123 - r
-        iloco = np.mean(dc)
-        iloco_max = max(0, iloco)
-        iloco_ratio = iloco / np.mean(r)
-        dc = r1 - r
-        ci = getCI(dc, adjusted_alpha)
+        for (j1, j2, j3) in feature_groups:
+            # Compute DeltaCap for the current feature triplet
+            r123, r1, r2, r3, r12, r13, r23, r = computeDeltaCap_third(Y, j1, j2, j3, predictions, mp_observations, mp_features)
+            dc = r1 + r2 + r3 - r12 - r13 - r23 + r123 - r
+            iloco = np.mean(dc)
+            iloco_max = max(0, iloco)
+            iloco_ratio = iloco / np.mean(r)
+            dc = r1 - r
+            ci = getCI(dc, adjusted_alpha)
 
-        # Store results for the current feature triplet in the dictionary
-        results[(j1, j2, j3)] = {
-            'iloco': iloco,
-            'iloco_max': iloco_max,
-            'iloco_ratio': iloco_ratio,
-            'ci': ci
-        }
+            # Store results for the current feature triplet in the dictionary
+            results[(j1, j2, j3)] = {
+                'iloco': iloco,
+                'iloco_max': iloco_max,
+                'iloco_ratio': iloco_ratio,
+                'ci': ci
+            }
+
 
     return results
 
