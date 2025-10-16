@@ -351,7 +351,7 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, models, feature_groups,
      or three feature indices (j1, j2, j3).
     order (int): Integer for second or third order iLOCO.
     type (string): regression or classification
-    perturbuation_col (string):
+    perturbuation_col (Int): index of perturbation column
     alpha (int):
     bonferroni (boolean):
 
