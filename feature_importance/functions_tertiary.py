@@ -384,6 +384,14 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, models, feature_groups,
                 dc = r1 - r
                 ci = getCI(dc, adjusted_alpha)
 
+                # Store results for the current feature pair in the dictionary
+                results[(j1, j2)] = {
+                'iloco': iloco,
+                'iloco_max': iloco_max,
+                'iloco_ratio': iloco_ratio,
+                'ci': ci
+                }
+
         if type == "classification":
             for (j1, j2) in feature_groups:
                 # Compute DeltaCap_xent for the current feature pair
@@ -395,13 +403,13 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, models, feature_groups,
                 dc = r1 - r
                 ci = getCI(dc, adjusted_alpha)
 
-            # Store results for the current feature pair in the dictionary
-            results[(j1, j2)] = {
-                'iloco': iloco,
-                'iloco_max': iloco_max,
-                'iloco_ratio': iloco_ratio,
-                'ci': ci
-            }
+                # Store results for the current feature pair in the dictionary
+                results[(j1, j2)] = {
+                    'iloco': iloco,
+                    'iloco_max': iloco_max,
+                    'iloco_ratio': iloco_ratio,
+                    'ci': ci
+                }
 
     if order == 3:
         if type == "regression":
@@ -416,6 +424,14 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, models, feature_groups,
                 dc = r1 - r
                 ci = getCI(dc, adjusted_alpha)
 
+                # Store results for the current feature pair in the dictionary
+                results[(j1, j2)] = {
+                    'iloco': iloco,
+                    'iloco_max': iloco_max,
+                    'iloco_ratio': iloco_ratio,
+                    'ci': ci
+                }
+
             if type == "classification":
             # Loop over each feature triplet in the list using  deltacap_xent
                 for (j1, j2, j3) in feature_groups:
@@ -427,13 +443,14 @@ def featureInteractions(X, Y, n_ratio, m_ratio, B, models, feature_groups,
                     iloco_ratio = iloco / np.mean(r)
                     dc = r1 - r
                     ci = getCI(dc, adjusted_alpha)
-            # Store results for the current feature triplet in the dictionary
-            results[(j1, j2, j3)] = {
-                'iloco': iloco,
-                'iloco_max': iloco_max,
-                'iloco_ratio': iloco_ratio,
-                'ci': ci
-            }
+
+                    # Store results for the current feature triplet in the dictionary
+                    results[(j1, j2, j3)] = {
+                        'iloco': iloco,
+                        'iloco_max': iloco_max,
+                        'iloco_ratio': iloco_ratio,
+                        'ci': ci
+                    }
 
 
     return results
