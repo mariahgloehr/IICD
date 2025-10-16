@@ -87,8 +87,9 @@ models = [DecisionTreeClass]
 
 mp2_results = []
 mp2_ci = []
-mp2_results = get_mp_metric(X, y, n_ratio, m_ratio, B, models = models, order = 2, perturbation_col=None,
-                            feature_groups=feature_pairs, bonferroni= True)
+mp2_results = get_mp_metric(X, y, n_ratio, m_ratio, B, models = models, order = 2, type = "classification",
+                            perturbation_col=None,
+                            feature_groups=feature_pairs, alpha = 0.1, bonferroni= True)
 mp2_scores = [mp2_results[(i, j)]['iloco'] for (i, j) in feature_pairs]
 mp2_ci = [mp2_results[(i, j)]["ci"] for (i, j) in feature_pairs]
 
