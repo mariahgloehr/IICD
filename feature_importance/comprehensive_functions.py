@@ -37,52 +37,8 @@ def buildMP(X, Y, n_ratio, m_ratio, adjust_col=None):
     y_mp = Y[np.ix_(idx_I)]
     return idx_I, idx_F, x_mp, y_mp
 
-class Ensemble:
-    def __init__(self, models):
-        self.models = models
-
-    def fit(self, X, Y, n_ratio, m_ratio, B, adjust_col=None):
-        N, M = X.shape
-        self.mp_observations = np.zeros((N, B), dtype=bool)
-        self.mp_features = np.zeros((M, B), dtype=bool)
-        self.ensemble = [None] * B
-        for b in range(B):
-            idx_I, idx_F, x_mp, y_mp = buildMP(X, Y, n_ratio, m_ratio, adjust_col)
-            # randomly select a model each time
-            model = np.random.choice(self.models)
-            
-            self.ensemble[b] = clone(model).fit(x_mp, y_mp) 
-            self.mp_observations[idx_I, b] = True
-            self.mp_features[idx_F, b] = True  
-        return self
-        
-    def predict(self, X):
-        predictions = np.empty((len(X), len(self.ensemble)))
-        for b, m in enumerate(self.ensemble):
-            predictions[:, b] = m.predict(X[:, self.mp_features[:, b]])
-        return predictions
-    
-
-def predict(X, Y, n_ratio, m_ratio, B, models, adjust_col):
-    """
-    Fits and predicts models
-    """
-    N, M = X.shape
-    mp_observations = np.zeros((N, B), dtype=bool)
-    mp_features = np.zeros((M, B), dtype=bool)
-    predictions = np.empty((N, B))
-    for b in range(B):
-        idx_I, idx_F, x_mp, y_mp = buildMP(X, Y, n_ratio, m_ratio, adjust_col)
-
-        base_model = np.random.choice(models)
-        model = clone(base_model).fit(x_mp, y_mp)
-
-        predictions[:, b] = model.fit(x_mp, y_mp).predict(X[:, idx_F])
-        mp_observations[idx_I, b] = True
-        mp_features[idx_F, b] = True  
-    return predictions, mp_observations, mp_features
-
 def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
+
     """
     Builds, fits, and predicts a minipatch ensemble.
     Reproduces the behavior of both:
@@ -94,6 +50,7 @@ def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
     - mp_observations: (N, B) boolean array marking sampled observations
     - mp_features: (M, B) boolean array marking sampled features
     """
+    
     N, M = X.shape
     mp_observations = np.zeros((N, B), dtype=bool)
     mp_features = np.zeros((M, B), dtype=bool)
@@ -122,6 +79,7 @@ def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
         "predictions": predictions,
         "mp_observations": mp_observations,
         "mp_features": mp_features,
+        "ensemble": ensemble
     }
 
 ##-----
