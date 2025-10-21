@@ -40,10 +40,16 @@ def buildMP(X, Y, n_ratio, m_ratio, adjust_col=None):
 def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
 
     """
-    Builds, fits, and predicts a minipatch ensemble.
-    Reproduces the behavior of both:
-      - Ensemble.fit() + Ensemble.predict()
-      - predict() function above.
+    Builds, fits, and predicts a minipatch ensemble
+
+    Parameters:
+    X (numpy.ndarray): Feature matrix.
+    Y (numpy.ndarray): Target variable.
+    n_ratio (float): Ratio parameter for predict function.
+    m_ratio (float): Ratio parameter for predict function.
+    B (int): Number of bootstrap samples.
+    models (list): List of unfitted scikit-learn model objects
+    adjust_col (int): If provided, adjust for feature by forcing it into every minipatch
 
     Returns:
     - predictions: (N, B) array of predictions from each model
@@ -91,14 +97,12 @@ def make_feature_groups(M, order=2, include_col=None, subset=None):
     Generate feature index pairs or triplets for interaction analysis.
 
     Parameters
-    ----------
     M (int): Total number of features (columns in X)
     order(int): Order of interactions to generate (2 = pairs, 3 = triplets)
     include_col (int or None): If provided, only include groups that contain this feature index
     subset(list[int] or None): If provided, limit group generation to only these feature indices
 
-    Returns
-    -------
+    Returns:
     list[tuple[int]]
         List of feature index pairs or triplets.
     """
