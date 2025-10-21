@@ -50,7 +50,7 @@ def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
     - mp_observations: (N, B) boolean array marking sampled observations
     - mp_features: (M, B) boolean array marking sampled features
     """
-    
+
     N, M = X.shape
     mp_observations = np.zeros((N, B), dtype=bool)
     mp_features = np.zeros((M, B), dtype=bool)
@@ -268,13 +268,55 @@ def computeDeltaCap_second(Y, j1, j2, predictions, mp_observations, mp_features,
     return residual_loco12, residual_loco1,  residual_loco2, residual_loo    
 
 
-
-def getCI(delta_cap, alpha=0.1):
-    """Get confidence interval width / 2
+def computeDeltaCap_xent_third(Y, j1, j2, j3, predictions, mp_observations, mp_features, eps: float = 1e-12):
     """
-    sigma = np.std(delta_cap, ddof=1)
-    ci = norm.ppf(1 - alpha / 2) * sigma / np.sqrt(len(delta_cap))
-    return ci
+    Third-order cross-entropy DeltaCap.
+    """
+    # Normalize labels and predictions
+    Yk, K_y = _to_one_hot(Y)
+    preds_k, K_p = _as_probabilities(predictions, K_hint=Yk.shape[1])
+    if K_p != K_y:
+        raise ValueError(f"Class count mismatch between labels (K={K_y}) and predictions (K={K_p}).")
+    n, B = mp_observations.shape
+
+    def masked_mean_probs(preds, mask_bool):
+        w = mask_bool.astype(float)
+        denom = w.sum(axis=1, keepdims=True)
+        denom[denom == 0] = np.nan
+        num = np.nansum(preds * w[..., None], axis=1)
+        return num / denom
+
+    loo = 1 - mp_observations
+    m1 = 1 - mp_features[j1, :]
+    m2 = 1 - mp_features[j2, :]
+    m3 = 1 - mp_features[j3, :]
+
+    # all leave-out combinations
+    mu_loo     = masked_mean_probs(preds_k, loo)
+    mu_loco1   = masked_mean_probs(preds_k, loo * m1)
+    mu_loco2   = masked_mean_probs(preds_k, loo * m2)
+    mu_loco3   = masked_mean_probs(preds_k, loo * m3)
+    mu_loco12  = masked_mean_probs(preds_k, loo * m1 * m2)
+    mu_loco13  = masked_mean_probs(preds_k, loo * m1 * m3)
+    mu_loco23  = masked_mean_probs(preds_k, loo * m2 * m3)
+    mu_loco123 = masked_mean_probs(preds_k, loo * m1 * m2 * m3)
+
+    def xent(y_onehot, p):
+        p = np.clip(p, eps, 1 - eps)
+        return -np.nansum(y_onehot * np.log(p), axis=1)
+
+    # compute residuals for each subset
+    r_loo     = xent(Yk, mu_loo)
+    r_loco1   = xent(Yk, mu_loco1)
+    r_loco2   = xent(Yk, mu_loco2)
+    r_loco3   = xent(Yk, mu_loco3)
+    r_loco12  = xent(Yk, mu_loco12)
+    r_loco13  = xent(Yk, mu_loco13)
+    r_loco23  = xent(Yk, mu_loco23)
+    r_loco123 = xent(Yk, mu_loco123)
+
+    return (r_loco123, r_loco12, r_loco13, r_loco23,
+            r_loco1, r_loco2, r_loco3, r_loo)
 
 
 def computeDeltaCap_third(Y, j1, j2, j3, predictions, mp_observations, mp_features, metric=np.square):
@@ -319,6 +361,13 @@ def computeDeltaCap_third(Y, j1, j2, j3, predictions, mp_observations, mp_featur
 
     return (residual_loco123, residual_loco1, residual_loco2, residual_loco3,
             residual_loco12, residual_loco13, residual_loco23, residual_loo)
+
+def getCI(delta_cap, alpha=0.1):
+    """Get confidence interval width / 2
+    """
+    sigma = np.std(delta_cap, ddof=1)
+    ci = norm.ppf(1 - alpha / 2) * sigma / np.sqrt(len(delta_cap))
+    return ci
 
 
 def featureInteractions(X, Y, mp_ensemble, feature_groups, 
@@ -420,7 +469,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
             # Loop over each feature triplet in the list using  deltacap_xent
                 for (j1, j2, j3) in feature_groups:
                     # Compute DeltaCap for the current feature triplet
-                    r123, r1, r2, r3, r12, r13, r23, r = computeDeltaCap_xent_second(Y, j1, j2, j3, predictions, mp_observations, mp_features)
+                    r123, r1, r2, r3, r12, r13, r23, r = computeDeltaCap_xent_third(Y, j1, j2, j3, predictions, mp_observations, mp_features)
                     dc = r1 + r2 + r3 - r12 - r13 - r23 + r123 - r
                     iloco = np.mean(dc)
                     iloco_max = max(0, iloco)
