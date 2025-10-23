@@ -11,8 +11,8 @@ def buildMP(X, Y, n_ratio, m_ratio, adjust_col=None):
     """
     Builds a minipatch. 
     Parameters:
-    X (pandas.DataFrame): Feature matrix.
-    Y (pandas.DataFrame): Target variable.
+    X (numpy.ndarray): Feature matrix.
+    Y (numpy.ndarray): Target variable.
     n_ratio (float): Ratio parameter for predict function.
     m_ratio (float): Ratio parameter for predict function.
     adjust_col (int): If provided, adjust for feature by forcing it into every minipatch
@@ -52,8 +52,8 @@ def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
     Builds, fits, and predicts a minipatch ensemble
 
     Parameters:
-    X (pandas.DataFrame): Feature matrix.
-    Y (pandas.DataFrame): Target variable.
+    X (numpy.ndarray OR pandas.DataFrame): Feature matrix.
+    Y (numpy.ndarray OR pandas.DataFrame): Target variable.
     n_ratio (float): Ratio parameter for predict function.
     m_ratio (float): Ratio parameter for predict function.
     B (int): Number of bootstrap samples.
@@ -66,9 +66,17 @@ def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
     - mp_features: (M, B) boolean array marking sampled features
     """
 
-    # Make X, Y numpy arrays
-    X = X.to_numpy()
-    Y = Y.to_numpy().ravel()
+    # Make X numpy array
+    if isinstance(X, pd.DataFrame):
+        X = X.to_numpy()
+    else:
+        X = np.asarray(X)
+
+    # Convert y to numpy array
+    if isinstance(Y, (pd.Series, pd.DataFrame)):
+        Y = Y.to_numpy().ravel()
+    else:
+        Y = np.asarray(Y).ravel()
 
     N, M = X.shape
     mp_observations = np.zeros((N, B), dtype=bool)
@@ -110,7 +118,7 @@ def make_feature_groups(X, order=2, include_col=None, subset=None):
     Generate feature index pairs or triplets for interaction analysis.
 
     Parameters:
-    X (pandas.DataFrame): Feature matrix.
+    X (numpy.ndarray or pandas.DataFrame): Feature matrix.
     order(int): Order of interactions to generate (2 = pairs, 3 = triplets)
     include_col (int or None): If provided, only include groups that contain this feature index
     subset(list[int] or None): If provided, limit group generation to only these feature indices
@@ -120,7 +128,11 @@ def make_feature_groups(X, order=2, include_col=None, subset=None):
         List of feature index pairs or triplets.
     """
     # Total number of features (columns in X as numpy array)
-    X = X.to_numpy()
+    if isinstance(X, pd.DataFrame):
+        X = X.to_numpy()
+    else:
+        X = np.asarray(X)
+
     M = X.shape[1]
 
     # Define feature pool
@@ -397,7 +409,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
 
     Parameters:
     X (pandas.DataFrame): Feature matrix.
-    Y (pandas.DataFrame): Target variable.
+    Y (numpy.ndarray OR pandas.DataFrame): Target variable.
     mp_ensemble: pre-made minipatch ensemble (with predictions) from the mp_ensemble() function
     feature_groups (list of tuples): List of tuples where each tuple contains either two (j1,j2)
      or three feature indices (j1, j2, j3).
@@ -415,7 +427,11 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
     feature_names = X.columns.tolist()
     X = X.to_numpy()
     
-    Y = Y.to_numpy().ravel()
+    # Convert y to numpy array if not already
+    if isinstance(Y, (pd.Series, pd.DataFrame)):
+        Y = Y.to_numpy().ravel()
+    else:
+        Y = np.asarray(Y).ravel()
 
     # Get predictions and model properties from pre-made ensemble
     predictions = mp_ensemble["predictions"]
