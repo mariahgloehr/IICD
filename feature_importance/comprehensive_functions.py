@@ -448,9 +448,9 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
         adjusted_alpha = alpha
         
     if order == 2:
-        feat_key = ",".join(feature_names[j] for j in (j1, j2))
         if type == "regression":
             for (j1, j2) in feature_groups:
+                feat_key = ",".join(feature_names[j] for j in (j1, j2))
                 # Compute DeltaCap for the current feature pair
                 r12, r1, r2, r = computeDeltaCap_second(Y, j1, j2, predictions, mp_observations, mp_features)
                 dc = r1 + r2 - r12 - r
@@ -471,6 +471,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
 
         if type == "classification":
             for (j1, j2) in feature_groups:
+                feat_key = ",".join(feature_names[j] for j in (j1, j2))
                 # Compute DeltaCap_xent for the current feature pair
                 r12, r1, r2, r = computeDeltaCap_xent_second(Y, j1, j2, predictions, mp_observations, mp_features)
                 dc = r1 + r2 - r12 - r
@@ -494,6 +495,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
         if type == "regression":
          # Loop over each feature triplet in the list using regression delta cap
             for (j1, j2, j3) in feature_groups:
+                feat_key = ",".join(feature_names[j] for j in (j1, j2, j3))
                 # Compute DeltaCap for the current feature triplet
                 r123, r1, r2, r3, r12, r13, r23, r = computeDeltaCap_third(Y, j1, j2, j3, predictions, mp_observations, mp_features)
                 dc = r1 + r2 + r3 - r12 - r13 - r23 + r123 - r
@@ -515,6 +517,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
         if type == "classification":
         # Loop over each feature triplet in the list using  deltacap_xent
             for (j1, j2, j3) in feature_groups:
+                feat_key = ",".join(feature_names[j] for j in (j1, j2, j3))
                 # Compute DeltaCap for the current feature triplet
                 r123, r1, r2, r3, r12, r13, r23, r = computeDeltaCap_xent_third(Y, j1, j2, j3, predictions, mp_observations, mp_features)
                 dc = r1 + r2 + r3 - r12 - r13 - r23 + r123 - r
