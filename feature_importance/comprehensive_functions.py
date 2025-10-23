@@ -491,7 +491,6 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
                 }
 
     if order == 3:
-        feat_key = ",".join(feature_names[j] for j in (j1, j2, j3))
         if type == "regression":
          # Loop over each feature triplet in the list using regression delta cap
             for (j1, j2, j3) in feature_groups:
