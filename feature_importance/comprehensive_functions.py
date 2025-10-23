@@ -92,12 +92,12 @@ def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
 ## feature groups function
 ##-----
 
-def make_feature_groups(M, order=2, include_col=None, subset=None):
+def make_feature_groups(X, order=2, include_col=None, subset=None):
     """
     Generate feature index pairs or triplets for interaction analysis.
 
-    Parameters
-    M (int): Total number of features (columns in X)
+    Parameters:
+    X (numpy.ndarray): Feature matrix.
     order(int): Order of interactions to generate (2 = pairs, 3 = triplets)
     include_col (int or None): If provided, only include groups that contain this feature index
     subset(list[int] or None): If provided, limit group generation to only these feature indices
@@ -106,6 +106,8 @@ def make_feature_groups(M, order=2, include_col=None, subset=None):
     list[tuple[int]]
         List of feature index pairs or triplets.
     """
+    # Total number of features (columns in X)
+    M = X.shape[1]
 
     # Define feature pool
     if subset is not None:
@@ -469,25 +471,25 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
                     'ci': ci
                 }
 
-            if type == "classification":
-            # Loop over each feature triplet in the list using  deltacap_xent
-                for (j1, j2, j3) in feature_groups:
-                    # Compute DeltaCap for the current feature triplet
-                    r123, r1, r2, r3, r12, r13, r23, r = computeDeltaCap_xent_third(Y, j1, j2, j3, predictions, mp_observations, mp_features)
-                    dc = r1 + r2 + r3 - r12 - r13 - r23 + r123 - r
-                    iloco = np.mean(dc)
-                    iloco_max = max(0, iloco)
-                    iloco_ratio = iloco / np.mean(r)
-                    dc = r1 - r
-                    ci = getCI(dc, adjusted_alpha)
+        if type == "classification":
+        # Loop over each feature triplet in the list using  deltacap_xent
+            for (j1, j2, j3) in feature_groups:
+                # Compute DeltaCap for the current feature triplet
+                r123, r1, r2, r3, r12, r13, r23, r = computeDeltaCap_xent_third(Y, j1, j2, j3, predictions, mp_observations, mp_features)
+                dc = r1 + r2 + r3 - r12 - r13 - r23 + r123 - r
+                iloco = np.mean(dc)
+                iloco_max = max(0, iloco)
+                iloco_ratio = iloco / np.mean(r)
+                dc = r1 - r
+                ci = getCI(dc, adjusted_alpha)
 
-                    # Store results for the current feature triplet in the dictionary
-                    results[(j1, j2, j3)] = {
-                        'iloco': iloco,
-                        'iloco_max': iloco_max,
-                        'iloco_ratio': iloco_ratio,
-                        'ci': ci
-                    }
+                # Store results for the current feature triplet in the dictionary
+                results[(j1, j2, j3)] = {
+                    'iloco': iloco,
+                    'iloco_max': iloco_max,
+                    'iloco_ratio': iloco_ratio,
+                    'ci': ci
+                }
 
 
     return results
