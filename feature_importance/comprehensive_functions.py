@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy.stats import norm
 from sklearn.base import clone
 import itertools
@@ -8,7 +9,15 @@ import itertools
 ##---------
 def buildMP(X, Y, n_ratio, m_ratio, adjust_col=None):
     """
-    Builds a minipatch. Returns:
+    Builds a minipatch. 
+    Parameters:
+    X (pandas.DataFrame): Feature matrix.
+    Y (pandas.DataFrame): Target variable.
+    n_ratio (float): Ratio parameter for predict function.
+    m_ratio (float): Ratio parameter for predict function.
+    adjust_col (int): If provided, adjust for feature by forcing it into every minipatch
+    
+    Returns:
     - idx_I = the chosen subset of observation indices
     - idx_F = the chosen subset of feature indices (always includes adjust_col if given)
     - x_mp  = the minipatch of observations
@@ -43,8 +52,8 @@ def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
     Builds, fits, and predicts a minipatch ensemble
 
     Parameters:
-    X (numpy.ndarray): Feature matrix.
-    Y (numpy.ndarray): Target variable.
+    X (pandas.DataFrame): Feature matrix.
+    Y (pandas.DataFrame): Target variable.
     n_ratio (float): Ratio parameter for predict function.
     m_ratio (float): Ratio parameter for predict function.
     B (int): Number of bootstrap samples.
@@ -56,6 +65,10 @@ def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
     - mp_observations: (N, B) boolean array marking sampled observations
     - mp_features: (M, B) boolean array marking sampled features
     """
+
+    # Make X, Y numpy arrays
+    X = X.to_numpy()
+    Y = Y.to_numpy().ravel()
 
     N, M = X.shape
     mp_observations = np.zeros((N, B), dtype=bool)
@@ -97,7 +110,7 @@ def make_feature_groups(X, order=2, include_col=None, subset=None):
     Generate feature index pairs or triplets for interaction analysis.
 
     Parameters:
-    X (numpy.ndarray): Feature matrix.
+    X (pandas.DataFrame): Feature matrix.
     order(int): Order of interactions to generate (2 = pairs, 3 = triplets)
     include_col (int or None): If provided, only include groups that contain this feature index
     subset(list[int] or None): If provided, limit group generation to only these feature indices
@@ -106,7 +119,8 @@ def make_feature_groups(X, order=2, include_col=None, subset=None):
     list[tuple[int]]
         List of feature index pairs or triplets.
     """
-    # Total number of features (columns in X)
+    # Total number of features (columns in X as numpy array)
+    X = X.to_numpy()
     M = X.shape[1]
 
     # Define feature pool
@@ -382,8 +396,8 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
     Computes interaction metrics (iLOCO) for multiple feature triplets.
 
     Parameters:
-    X (numpy.ndarray): Feature matrix.
-    Y (numpy.ndarray): Target variable.
+    X (pandas.DataFrame): Feature matrix.
+    Y (pandas.DataFrame): Target variable.
     mp_ensemble: pre-made minipatch ensemble (with predictions) from the mp_ensemble() function
     feature_groups (list of tuples): List of tuples where each tuple contains either two (j1,j2)
      or three feature indices (j1, j2, j3).
@@ -397,6 +411,12 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
           - 'iloco': The mean interaction value.
           - iloco_max, iloco_ratio, ci
     """
+    # Store feature names from X as a DataFrame, then convert to numpy array
+    feature_names = X.columns.tolist()
+    X = X.to_numpy()
+    
+    Y = Y.to_numpy().ravel()
+
     # Get predictions and model properties from pre-made ensemble
     predictions = mp_ensemble["predictions"]
     mp_observations = mp_ensemble["mp_observations"]
@@ -412,6 +432,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
         adjusted_alpha = alpha
         
     if order == 2:
+        feat_key = ",".join(feature_names[j] for j in (j1, j2))
         if type == "regression":
             for (j1, j2) in feature_groups:
                 # Compute DeltaCap for the current feature pair
@@ -425,6 +446,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
 
                 # Store results for the current feature pair in the dictionary
                 results[(j1, j2)] = {
+                'features': feat_key,
                 'iloco': iloco,
                 'iloco_max': iloco_max,
                 'iloco_ratio': iloco_ratio,
@@ -444,6 +466,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
 
                 # Store results for the current feature pair in the dictionary
                 results[(j1, j2)] = {
+                    'features': feat_key,
                     'iloco': iloco,
                     'iloco_max': iloco_max,
                     'iloco_ratio': iloco_ratio,
@@ -451,6 +474,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
                 }
 
     if order == 3:
+        feat_key = ",".join(feature_names[j] for j in (j1, j2, j3))
         if type == "regression":
          # Loop over each feature triplet in the list using regression delta cap
             for (j1, j2, j3) in feature_groups:
@@ -465,6 +489,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
 
                 # Store results for the current feature pair in the dictionary
                 results[(j1, j2)] = {
+                    'features': feat_key,
                     'iloco': iloco,
                     'iloco_max': iloco_max,
                     'iloco_ratio': iloco_ratio,
@@ -485,6 +510,7 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
 
                 # Store results for the current feature triplet in the dictionary
                 results[(j1, j2, j3)] = {
+                    'features': feat_key,
                     'iloco': iloco,
                     'iloco_max': iloco_max,
                     'iloco_ratio': iloco_ratio,
