@@ -46,7 +46,7 @@ def buildMP(X, Y, n_ratio, m_ratio, adjust_col=None):
     y_mp = Y[np.ix_(idx_I)]
     return idx_I, idx_F, x_mp, y_mp
 
-def mp_ensemble(X, Y, n_ratio, m_ratio, B, models, adjust_col=None):
+def mp_ensemble(X, Y, n_ratio = 0.5, m_ratio = 0.5, B = 1000, models = [], adjust_col=None):
 
     """
     Builds, fits, and predicts a minipatch ensemble
@@ -124,8 +124,7 @@ def make_feature_groups(X, order=2, include_col=None, subset=None):
     subset(list[int] or None): If provided, limit group generation to only these feature indices
 
     Returns:
-    list[tuple[int]]
-        List of feature index pairs or triplets.
+    list[tuple[int]]: List of feature index pairs or triplets.
     """
     # Total number of features (columns in X as numpy array)
     if isinstance(X, pd.DataFrame):
@@ -403,7 +402,7 @@ def getCI(delta_cap, alpha=0.1):
 
 
 def featureInteractions(X, Y, mp_ensemble, feature_groups, 
-                        order = 2, type = "regression", alpha = 0.1, bonferroni=False):
+                        order = 2, type = "regression", alpha = 0.1, bonferroni=True):
     """
     Computes interaction metrics (iLOCO) for multiple feature triplets.
 
@@ -414,9 +413,9 @@ def featureInteractions(X, Y, mp_ensemble, feature_groups,
     feature_groups (list of tuples): List of tuples where each tuple contains either two (j1,j2)
      or three feature indices (j1, j2, j3).
     order (int): Integer for second or third order iLOCO.
-    type (string): regression or classification
-    alpha (int):
-    bonferroni (boolean):
+    type (string): Regression or classification
+    alpha (int): Significance level for confidence interval.
+    bonferroni (boolean): If True, applies Bonferroni correction.
 
     Returns:
     dict: Dictionary where keys are feature pairs (j1, j2) or triplets (j1, j2, j3) and values are dictionaries containing:
