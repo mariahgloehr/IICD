@@ -18,4 +18,6 @@ train_svm.npz
 
 MLP iLOCO.zip
 
+ensemble_top40.pkl
+
 pdp_ensemble_rf.npz
